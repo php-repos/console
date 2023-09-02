@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+use PhpRepos\Console\Environment;
+use function PhpRepos\Console\Runner\run;
+
+$environment = Environment::console();
+
+if (isset($custom_console_config)) {
+    $environment->config($custom_console_config);
+}
+
+exit(run($environment));

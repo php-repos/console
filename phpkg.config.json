@@ -1,0 +1,26 @@
+{
+    "map": {
+        "PhpRepos\\Console": "Source",
+        "Tests": "Tests"
+    },
+    "entry-points": [
+        "console"
+    ],
+    "excludes": [],
+    "executables": {
+        "console": "console"
+    },
+    "packages-directory": "Packages",
+    "packages": {
+        "https:\/\/github.com\/php-repos\/file-manager.git": "v2.0.3",
+        "https:\/\/github.com\/php-repos\/datatype.git": "v1.1.0",
+        "https:\/\/github.com\/php-repos\/test-runner.git": "v1.1.0",
+        "https:\/\/github.com\/php-repos\/cli.git": "v1.2.1"
+    },
+    "aliases": {
+        "test-runner": "https:\/\/github.com\/php-repos\/test-runner.git",
+        "file-manager": "https:\/\/github.com\/php-repos\/file-manager.git",
+        "datatype": "https:\/\/github.com\/php-repos\/datatype.git",
+        "cli": "https:\/\/github.com\/php-repos\/cli.git"
+    }
+}
