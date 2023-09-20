@@ -4,7 +4,7 @@ use PhpRepos\Console\Attributes\Argument;
 use PhpRepos\Console\Attributes\Description;
 use PhpRepos\Console\Attributes\LongOption;
 use PhpRepos\Console\Attributes\ShortOption;
-use function PhpRepos\Cli\IO\Write\line;
+use function PhpRepos\Cli\Output\line;
 
 /**
  * This is the full-fledged command

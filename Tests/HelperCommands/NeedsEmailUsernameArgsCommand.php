@@ -2,7 +2,7 @@
 
 use PhpRepos\Console\Attributes\Argument;
 use PhpRepos\Console\Attributes\Description;
-use function PhpRepos\Cli\IO\Write\line;
+use function PhpRepos\Cli\Output\line;
 
 return function (
     #[Argument]

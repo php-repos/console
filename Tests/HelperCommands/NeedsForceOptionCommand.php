@@ -3,7 +3,7 @@
 use PhpRepos\Console\Attributes\Description;
 use PhpRepos\Console\Attributes\LongOption;
 use PhpRepos\Console\Attributes\ShortOption;
-use function PhpRepos\Cli\IO\Write\line;
+use function PhpRepos\Cli\Output\line;
 
 return function (
     #[LongOption('force')]

@@ -6,23 +6,23 @@
             "version": "v1.1.0",
             "hash": "3b068db2d678d9a2eb803951cc602ad6a09fbee9"
         },
-        "git@github.com:php-repos\/test-runner.git": {
-            "owner": "php-repos",
-            "repo": "test-runner",
-            "version": "v1.1.0",
-            "hash": "119c47953485a6ec127cd896a70e96376306a954"
-        },
-        "https:\/\/github.com\/php-repos\/cli.git": {
-            "owner": "php-repos",
-            "repo": "cli",
-            "version": "v1.2.1",
-            "hash": "ca52cd9b9477a323cc7737d6f5ebf6dff05cdf89"
-        },
         "https:\/\/github.com\/php-repos\/file-manager.git": {
             "owner": "php-repos",
             "repo": "file-manager",
             "version": "v2.0.3",
             "hash": "a03298b28f31192acf682b0dd015e3bb1aef307b"
+        },
+        "https:\/\/github.com\/php-repos\/cli.git": {
+            "owner": "php-repos",
+            "repo": "cli",
+            "version": "v2.0.0",
+            "hash": "f4445518f45bc4161037532298b509bc7fb071bd"
+        },
+        "https:\/\/github.com\/php-repos\/test-runner.git": {
+            "owner": "php-repos",
+            "repo": "test-runner",
+            "version": "v1.2.0",
+            "hash": "3b6df8cd914747d1317840155f5b4ed73c441250"
         }
     }
 }

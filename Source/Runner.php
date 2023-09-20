@@ -3,7 +3,7 @@
 namespace PhpRepos\Console\Runner;
 
 use Closure;
-use PhpRepos\Cli\IO\Write;
+use PhpRepos\Cli\Output;
 use PhpRepos\Console\Arguments;
 use PhpRepos\Console\CommandParameter;
 use PhpRepos\Console\Environment;
@@ -46,7 +46,7 @@ function run(Environment $environment): int
     // Check if the commands directory exists and is not empty.
     if (! exists($environment->config->commands_directory) || is_empty($environment->config->commands_directory)) {
         if ($should_show_help) {
-            Write\line(<<<EOD
+            Output\line(<<<EOD
 Usage: $environment->entry_point_name {$environment->config->additional_supported_options}[-h | --help]
                <command> [<options>] [<args>]
 EOD);
@@ -54,7 +54,7 @@ EOD);
             return 0;
         }
 
-        Write\error("There is no command in {$environment->config->commands_directory} path!");
+        Output\error("There is no command in {$environment->config->commands_directory} path!");
 
         return 1;
     }
@@ -65,11 +65,11 @@ EOD);
         ->filter(fn (Path $path) => is_file($path) && str_ends_with($path, $environment->config->commands_file_suffix));
 
     if (! $command_name) {
-        Write\line(<<<EOD
+        Output\line(<<<EOD
 Usage: $environment->entry_point_name {$environment->config->additional_supported_options}[-h | --help]
                <command> [<options>] [<args>]
 EOD);
-        Write\output(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
+        Output\write(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
 
         $commands = $commands->reduce(function ($commands, Path $command_path) use ($environment) {
             $commands[guess_name($environment, $command_path)] = first_line(docblock_to_text(require $command_path));
@@ -80,8 +80,8 @@ EOD);
 
         foreach ($commands as $command => $description) {
             $description
-                ? Write\line('    ' . str_pad($command, $max_key_length + 4) . $description)
-                : Write\line("    $command");
+                ? Output\line('    ' . str_pad($command, $max_key_length + 4) . $description)
+                : Output\line("    $command");
         }
 
         return 0;
@@ -92,7 +92,7 @@ EOD);
     );
 
     if (is_null($command_path)) {
-        Write\error("Command $command_name not found!");
+        Output\error("Command $command_name not found!");
 
         return 1;
     }
@@ -101,16 +101,16 @@ EOD);
 
     try {
         if ($should_show_help) {
-            Write\line(command_help($environment, $command_name, $command));
+            Output\line(command_help($environment, $command_name, $command));
             exit(0);
         }
 
         exit(execute(require $command_path, Arguments::from_argv()));
     } catch (InvalidCommandPromptException $exception) {
-        Write\error('Error: ' . $exception->getMessage());
-        Write\line(command_help($environment, $command_name, $command));
+        Output\error('Error: ' . $exception->getMessage());
+        Output\line(command_help($environment, $command_name, $command));
     } catch (InvalidCommandDefinitionException $exception) {
-        Write\error('Error: ' . $exception->getMessage());
+        Output\error('Error: ' . $exception->getMessage());
     }
 
     return 1;
