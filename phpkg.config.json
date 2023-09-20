@@ -14,8 +14,8 @@
     "packages": {
         "https:\/\/github.com\/php-repos\/file-manager.git": "v2.0.3",
         "https:\/\/github.com\/php-repos\/datatype.git": "v1.1.0",
-        "https:\/\/github.com\/php-repos\/test-runner.git": "v1.1.0",
-        "https:\/\/github.com\/php-repos\/cli.git": "v1.2.1"
+        "https:\/\/github.com\/php-repos\/test-runner.git": "v1.2.0",
+        "https:\/\/github.com\/php-repos\/cli.git": "v2.0.0"
     },
     "aliases": {
         "test-runner": "https:\/\/github.com\/php-repos\/test-runner.git",

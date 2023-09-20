@@ -2,8 +2,8 @@
 
 namespace Tests\ConsoleTest;
 
-use function PhpRepos\Cli\IO\Write\assert_error;
-use function PhpRepos\Cli\IO\Write\assert_line;
+use function PhpRepos\Cli\Output\assert_error;
+use function PhpRepos\Cli\Output\assert_line;
 use function PhpRepos\TestRunner\Assertions\Boolean\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 use function Tests\Helper\copy_commands;

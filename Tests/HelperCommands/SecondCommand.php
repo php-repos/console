@@ -1,6 +1,6 @@
 <?php
 
-use function PhpRepos\Cli\IO\Write\line;
+use function PhpRepos\Cli\Output\line;
 
 /**
  * This is a description

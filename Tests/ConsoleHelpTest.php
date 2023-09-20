@@ -2,7 +2,7 @@
 
 namespace Tests\ConsoleHelpTest;
 
-use function PhpRepos\Cli\IO\Write\assert_error;
+use function PhpRepos\Cli\Output\assert_error;
 use function PhpRepos\TestRunner\Assertions\Boolean\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 use function Tests\Helper\copy_commands;

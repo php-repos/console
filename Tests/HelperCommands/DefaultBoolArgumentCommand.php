@@ -1,7 +1,7 @@
 <?php
 
 use PhpRepos\Console\Attributes\Argument;
-use function PhpRepos\Cli\IO\Write\line;
+use function PhpRepos\Cli\Output\line;
 
 return function (
     #[Argument]
