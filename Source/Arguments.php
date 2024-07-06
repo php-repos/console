@@ -104,6 +104,19 @@ class Arguments
         };
     }
 
+    /**
+     * Takes any remaining items.
+     *
+     * @return array
+     */
+    public function take_all(): array
+    {
+        $temp = $this->arguments;
+        $this->arguments = [];
+
+        return $temp;
+    }
+
     private function take_option_as_array(CommandParameter $parameter)
     {
         return reduce($this->arguments, function ($options, $argument, $index) use ($parameter) {
@@ -237,13 +250,5 @@ class Arguments
         $this->use(first_key($this->arguments));
 
         return $value;
-    }
-
-    private function take_all(): array
-    {
-        $temp = $this->arguments;
-        $this->arguments = [];
-
-        return $temp;
     }
 }

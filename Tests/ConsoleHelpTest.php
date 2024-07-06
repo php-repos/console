@@ -38,6 +38,7 @@ test(
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
+\e[39m    accept-excessive-arguments
 \e[39m    default-bool-argument
 \e[39m    default-string-argument
 \e[39m    first
@@ -83,6 +84,7 @@ test(
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
+\e[39m    accept-excessive-arguments
 \e[39m    default-bool-argument
 \e[39m    default-string-argument
 \e[39m    first
@@ -516,6 +518,34 @@ This command does not accept any options.
 EOD;
 
         assert_true($expected === $output, 'needs-bool-argument command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should not show the defined variable for excessive arguments',
+    case: function () {
+        $output = help('accept-excessive-arguments');
+        $expected = <<<EOD
+\e[39mUsage: console accept-excessive-arguments [<options>]
+
+Description:
+No description provided for the command.
+
+Arguments:
+This command does not accept any arguments.
+
+Options:
+  --email <email> The email option for the command
+
+EOD;
+
+        assert_true($expected === $output, 'accept-excessive-arguments command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
     },
     before: function () {
         copy_commands();
