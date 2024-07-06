@@ -62,6 +62,7 @@ test(
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
+\e[39m    accept-excessive-arguments
 \e[39m    default-bool-argument
 \e[39m    default-string-argument
 \e[39m    first
@@ -709,6 +710,21 @@ Options:
 EOD;
 
         assert_true($expected === $output, 'Wrong error message when extra argument passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should pass excessive arguments to the command when there is a variable defined for accepting them',
+    case: function () {
+        $output = run('accept-excessive-arguments --email=info@phpkg.com --password=secret john -l -p');
+
+        assert_line('--password=secretjohn-l-p', $output);
     },
     before: function () {
         copy_commands();

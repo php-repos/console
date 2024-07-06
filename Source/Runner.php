@@ -132,51 +132,67 @@ EOD);
  */
 function execute(Closure $command, Arguments $arguments): ?int
 {
+    $command_parameters = ParamCollection::from($command);
+
+    $parameters = new Map();
+
     /** @var Map $parameters */
-    $parameters = reduce(
-        ParamCollection::from($command)->items(),
-        function (Map $parameters, CommandParameter $command_parameter) use ($arguments) {
-            if ($command_parameter->is_option) {
-                return $parameters->put(new Pair($command_parameter, $arguments->take_option($command_parameter)));
+    $parameters = $command_parameters
+        ->except(fn (CommandParameter $command_parameter) => $command_parameter->wants_excessive_arguments)
+        ->reduce(
+            function (Map $parameters, CommandParameter $command_parameter) use ($arguments) {
+                return $command_parameter->is_option
+                    ? $parameters->put(new Pair($command_parameter->name, $arguments->take_option($command_parameter)))
+                    : $parameters->put(new Pair($command_parameter->name, null));
+            },
+            $parameters
+        );
+
+    /** @var Map $parameters */
+    $parameters = $command_parameters
+        ->except(fn (CommandParameter $command_parameter) => $command_parameter->wants_excessive_arguments)
+        ->reduce(function (map $parameters, CommandParameter $command_parameter) use ($arguments) {
+            $parameter = $parameters->first(fn (Pair $parameter) => $parameter->key === $command_parameter->name);
+            $value = $parameter->value;
+
+            if ($value === null) {
+                if ($command_parameter->accepts_argument) {
+                    $value = $arguments->take_argument($command_parameter);
+                }
+
+                $value = is_null($value) ? $command_parameter->default_value : $value;
             }
 
-            return $parameters->put(new Pair($command_parameter, null));
-        },
-        new Map(),
-    );
+            if ($value === null && $command_parameter->type !== 'bool' && ! $command_parameter->is_optional) {
+                if ($command_parameter->accepts_argument) {
+                    $message = "Argument `$command_parameter->name` is required.";
+                } else {
+                    $hint = concat('|', $command_parameter->short_option, $command_parameter->long_option);
+                    $message = "Option `$hint` is required.";
+                }
 
-    $parameters = $parameters->map(function (Pair $parameter) use ($arguments) {
-        /** @var CommandParameter $command_param */
-        $command_param = $parameter->key;
-        $value = $parameter->value;
-
-        if ($value === null) {
-            if ($command_param->accepts_argument) {
-                $value = $arguments->take_argument($command_param);
+                throw new InvalidCommandPromptException($message);
             }
 
-            $value = is_null($value) ? $command_param->default_value : $value;
-        }
+            $parameters->push($parameter->value($value));
 
-        if ($value === null && $command_param->type !== 'bool' && ! $command_param->is_optional) {
-            if ($command_param->accepts_argument) {
-                $message = "Argument `$command_param->name` is required.";
-            } else {
-                $hint = concat('|', $command_param->short_option, $command_param->long_option);
-                $message = "Option `$hint` is required.";
-            }
+            return $parameters;
+        }, $parameters);
 
-            throw new InvalidCommandPromptException($message);
-        }
-
-        return $value;
-    });
-
-    if (! $arguments->all_used()) {
+    if ($command_parameters->has(fn (CommandParameter $parameter) => $parameter->wants_excessive_arguments)) {
+        $excessive_arguments_parameter = $command_parameters->first(fn (CommandParameter $parameter) => $parameter->wants_excessive_arguments);
+        $parameters->put(new Pair($excessive_arguments_parameter->name, $arguments->take_all()));
+    } else if (! $arguments->all_used()) {
         throw new InvalidCommandPromptException('You passed invalid argument to the command.');
     }
 
-    return $command(...$parameters);
+    $command_parameters = $parameters->reduce(function (array $command_parameters, Pair $pair) {
+        $command_parameters[$pair->key] = $pair->value;
+
+        return $command_parameters;
+    }, []);
+
+    return call_user_func_array($command, $command_parameters);
 }
 
 /**
