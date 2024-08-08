@@ -45,4 +45,4 @@ jobs:
       - name: Execute tests
         run: |
           cd builds/production
-          php test-runner
+          phpkg run https://github.com/php-repos/test-runner.git
