@@ -3,7 +3,7 @@
 namespace Tests\ConsoleHelpTest;
 
 use function PhpRepos\Cli\Output\assert_error;
-use function PhpRepos\TestRunner\Assertions\Boolean\assert_true;
+use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 use function Tests\Helper\copy_commands;
 use function Tests\Helper\delete_commands;
