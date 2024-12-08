@@ -4,6 +4,7 @@ namespace PhpRepos\Console;
 
 use Closure;
 use PhpRepos\Datatype\Collection;
+use ReflectionException;
 use ReflectionParameter;
 use function PhpRepos\Console\Reflection\function_parameters;
 use function PhpRepos\Datatype\Arr\map;
@@ -26,7 +27,6 @@ class ParamCollection extends Collection
      *
      * @return static A new ParamCollection containing CommandParameter instances.
      * @throws ReflectionException
-     * @throws \ReflectionException
      */
     public static function from(Closure $command): static
     {

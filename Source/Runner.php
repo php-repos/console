@@ -105,7 +105,9 @@ EOD);
             exit(0);
         }
 
-        exit(execute(require $command_path, Arguments::from_argv()));
+        $return = execute(require $command_path, Arguments::from_argv());
+
+        exit($return !== null ? $return : 0);
     } catch (InvalidCommandPromptException $exception) {
         Output\error('Error: ' . $exception->getMessage());
         Output\line(command_help($environment, $command_name, $command));
