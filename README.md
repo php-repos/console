@@ -6,9 +6,7 @@ The Console Package simplifies creating and running CLI commands for PHP applica
 
 ---
 
-## Usage
-
-### Installation
+## Installation
 
 To use the Console Package, install it as a dependency with `phpkg`:
 
@@ -16,7 +14,7 @@ To use the Console Package, install it as a dependency with `phpkg`:
 phpkg add https://github.com/php-repos/console.git
 ```
 
-### Running Commands
+## Running Commands
 
 After installation, build your project with `phpkg build` to access the Console Package’s CLI functionality. You can run commands using either of these methods from the `builds/development` directory:
 
@@ -34,7 +32,7 @@ After installation, build your project with `phpkg build` to access the Console 
 
 Both methods provide identical access to the Console Package’s CLI commands—choose the one that fits your workflow.
 
-### Creating Commands
+## Creating Commands
 
 Create commands by adding files under the `Source/Commands` directory. Use PascalCase filenames matching the command name (e.g., `MakeUserCommand.php` for `make-user`).
 
@@ -42,7 +40,7 @@ Create commands by adding files under the `Source/Commands` directory. Use Pasca
 
 Subcommands are supported via directory structure. For example, to create a `users:create` subcommand, add a file at `Source/Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using `/` as a separator.
 
-#### Defining Command Options
+### Defining Command Options
 
 Use attributes to define options in your command file. Here’s an example:
 
@@ -65,7 +63,7 @@ return function (
 Long options (e.g., `--email`) and short options (e.g., `-p`) support PHP types (`string`, `bool`, etc.).
 Optional parameters can use nullable types (e.g., `?bool`) or default values.
 
-#### Defining Command Arguments
+### Defining Command Arguments
 
 Add the Argument attribute to accept command-line arguments:
 
@@ -90,7 +88,7 @@ return function (
 
 Arguments are positional and mandatory unless marked nullable (e.g., ?string) or given a default value.
 
-#### Adding Command Help
+### Adding Command Help
 
 Document your command with a docblock for general help:
 
@@ -120,7 +118,7 @@ View help with:
 ./console make-user --help  # Shows make-user details
 ```
 
-#### Documenting Parameters
+### Documenting Parameters
 
 Add Description attributes for detailed argument and option help:
 
@@ -165,7 +163,7 @@ Options:
   -p <password>   The password for user login
   -f, --force     Force user creation
 ```
-### Examples
+## Examples
 
 - File Operation Command
    
@@ -232,7 +230,7 @@ Options:
    ./console users/create --help
    ```
 
-### Advanced Customization
+## Advanced Customization
 
 To customize command loading, create a file like `cli` in your project root. Here’s an example:
 
@@ -253,37 +251,3 @@ require Resolver\realpath(__DIR__ . '/Packages/php-repos/console/console');
 ```
 
 This changes the command directory to `Src/MyCommands` and uses `.php` as the suffix. Add `cli` to your `phpkg.config.json` under `entry-points` for it to work.
-
----
-
-## Contributing
-
-### Setting Up the Development Environment
-
-To contribute to the Console Package, follow these steps:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/php-repos/console.git
-   cd console
-   ```
-
-2. Install dependencies:
-   ```bash
-   phpkg install
-   ```
-3. Build the project:
-
-   ```bash
-   phpkg build
-   ```
-
-4. Contribute your changes.
-
-5. Test your changes:
-
-   ```bash
-   cd builds/development
-   phpkg run https://github.com/php-repos/test-runner.git
-   ```
