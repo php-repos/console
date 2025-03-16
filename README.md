@@ -1,51 +1,50 @@
-# Console Package for PHP Developers
+# Console Package
 
-The Console package is a powerful tool for PHP developers to create CLI commands and applications easily.
-This document will guide you through the process of using the Console package with the `phpkg` package manager.
+## Introduction
 
-## Installation
+The Console Package simplifies creating and running CLI commands for PHP applications using `phpkg`. It supports both standalone commands and nested subcommands, making it ideal for building lightweight CLI tools or extensible applications.
 
-To use the Console package, you need to install it using the `phpkg` package manager. Run the following command:
+---
 
-```shell
+## Usage
+
+### Installation
+
+To use the Console Package, install it as a dependency with `phpkg`:
+
+```bash
 phpkg add https://github.com/php-repos/console.git
 ```
 
-## Access and running console
+### Running Commands
 
-Users can access the Console package's CLI commands using either of the following methods:
+After installation, build your project with `phpkg build` to access the Console Package’s CLI functionality. You can run commands using either of these methods from the `builds/development` directory:
 
-1. **Using `php console`**
+1. Using `php console`
 
-   To run Console package commands, after building using `phpkg`, users can use the `php console` command followed by the desired command and its options.
-
-   Example:
    ```bash
    php console make-user --email=johndoe@example.com johndoe -p=secret
    ```
 
-2. **Using `./console`**
+2. Using `./console`
 
-   After building the Console package using `phpkg`, users can also run commands by using `./console` followed by 
-the desired command and its options.
-
-   Example:
    ```bash
    ./console make-user --email=johndoe@example.com johndoe -p=secret
    ```
-Both methods provide access to the same set of CLI commands and options provided by the Console package. Users can
-choose the one that best fits their workflow and preferences.
 
-## Creating Commands
+Both methods provide identical access to the Console Package’s CLI commands—choose the one that fits your workflow.
 
-After installing the Console package, you can create new commands under the `Source/Commands` directory. The command
-filename must be in PascalCase, corresponding to the desired command name. For example, if you want to create a
-`make-user` command, create a file named `MakeUserCommand.php` in the Source/Commands directory.
+### Creating Commands
 
-### Defining Command Options
+Create commands by adding files under the `Source/Commands` directory. Use PascalCase filenames matching the command name (e.g., `MakeUserCommand.php` for `make-user`).
 
-The Console package allows you to define command options using attributes. Here's how you can define options in
-your command file:
+**Subcommands**
+
+Subcommands are supported via directory structure. For example, to create a `users:create` subcommand, add a file at `Source/Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using `/` as a separator.
+
+#### Defining Command Options
+
+Use attributes to define options in your command file. Here’s an example:
 
 ```php
 use PhpRepos\Console\Attributes\LongOption;
@@ -59,17 +58,16 @@ return function (
     #[LongOption('force'), ShortOption('f')]
     ?bool $force = false,
 ) {
-// Your command logic here
+    // Command logic here
 };
 ```
 
-You can use both long and short options, and Console supports built-in PHP types as well as optional types for 
-the command options. For example, you can define flag options with a default value.
+Long options (e.g., `--email`) and short options (e.g., `-p`) support PHP types (`string`, `bool`, etc.).
+Optional parameters can use nullable types (e.g., `?bool`) or default values.
 
-### Defining Command Arguments
+#### Defining Command Arguments
 
-To receive command arguments, you need to define the `Argument` attribute for the parameters in your command function.
-Here's an example:
+Add the Argument attribute to accept command-line arguments:
 
 ```php
 use PhpRepos\Console\Attributes\Argument;
@@ -86,43 +84,45 @@ return function (
     #[LongOption('force'), ShortOption('f')]
     ?bool $force = false,
 ) {
-    // Your command logic here
+    // Command logic here
 };
 ```
 
-### Adding Command Help
+Arguments are positional and mandatory unless marked nullable (e.g., ?string) or given a default value.
 
-You can create helpful documentation for your commands by adding comments to your command files. Here's an example:
+#### Adding Command Help
+
+Document your command with a docblock for general help:
 
 ```php
-use PhpRepos\Console\Attributes\Argument;
-use PhpRepos\Console\Attributes\LongOption;
-use PhpRepos\Console\Attributes\ShortOption;
-
 /**
-* This command creates a user by the given email and the given password
-* When you need to force the command to create a user, you can pass the force option
-  */
+ * Creates a user with the given email and password.
+ * Use the force option to override existing users.
+ */
 return function (
-  #[LongOption('email')]
-  string $email,
-  #[Argument]
-  string $username,
-  #[ShortOption('p')]
-  string $password,
-  #[LongOption('force'), ShortOption('f')]
-  ?bool $force = false,
+    #[LongOption('email')]
+    string $email,
+    #[Argument]
+    string $username,
+    #[ShortOption('p')]
+    string $password,
+    #[LongOption('force'), ShortOption('f')]
+    ?bool $force = false,
 ) {
-  // Your command logic here
+    // Command logic here
 };
 ```
 
-Users can view the command help by running php `./console -h` or `./console --help`, which will display a list 
-of available commands and their descriptions.
+View help with:
 
-### Documenting Parameters
+```bash
+./console --help  # Lists all commands
+./console make-user --help  # Shows make-user details
+```
 
-You can also add documentation for each parameter in your command function. Here's an example:
+#### Documenting Parameters
+
+Add Description attributes for detailed argument and option help:
 
 ```php
 use PhpRepos\Console\Attributes\Argument;
@@ -131,44 +131,159 @@ use PhpRepos\Console\Attributes\LongOption;
 use PhpRepos\Console\Attributes\ShortOption;
 
 /**
- * This command creates a user by the given email and the given password
- * When you need to force the command to create a user, you can pass the force option
+ * Creates a user with the given email and password.
+ * Use the force option to override existing users.
  */
 return function (
     #[LongOption('email'), Description('The user email for the new user')]
     string $email,
-    #[Argument, Description('Pass a username for the user')]
+    #[Argument, Description('The username for the user')]
     string $username,
-    #[ShortOption('p'), Description('User password that user wants to sign in')]
+    #[ShortOption('p'), Description('The password for user login')]
     string $password,
-    #[LongOption('force'), ShortOption('f'), Description('You can force the creation of user')]
-    ?bool  $force = false,
+    #[LongOption('force'), ShortOption('f'), Description('Force user creation')]
+    ?bool $force = false,
 ) {
-    // Your command logic here
+    // Command logic here
 };
 ```
 
-Users can view detailed help for a specific command by running `./console -h <command>` or
-`./console --help <command>`, which will display information about the command's arguments and options,
-along with their descriptions. For example, for the previous command, the help looks like:
+Running `./console make-user --help` outputs:
 
 ```shell
 Usage: console make-user [<options>] <username>
 
 Description:
- This command creates a user by the given email and the given password
- When you need to force the command to create a user, you can pass the force option
+ Creates a user with the given email and password.
+ Use the force option to override existing users.
 
 Arguments:
-  <username> Pass a username for the user
+  <username> The username for the user
 
 Options:
   --email <email> The user email for the new user
-  -p <password>   User password that user wants to sing in
-  -f, --force     You can force the creation of user
+  -p <password>   The password for user login
+  -f, --force     Force user creation
+```
+### Examples
 
+- File Operation Command
+   
+   ```php
+   /**
+    * Deletes a file from the specified path.
+    */
+   return function (
+       #[Argument, Description('The path to the file to delete')]
+       string $path,
+       #[ShortOption('f'), Description('Force deletion without confirmation')]
+       ?bool $force = false,
+   ) {
+       if ($force || confirm('Are you sure?')) {
+           unlink($path);
+       }
+   };
+   ```
+
+- Array Option Example
+
+   ```php
+   /**
+    * Processes a list of IDs.
+    */
+   return function (
+       #[LongOption('ids'), Description('Comma-separated list of IDs')]
+       array $ids,
+   ) {
+       foreach ($ids as $id) {
+           echo "Processing ID: $id\n";
+       }
+   };
+   ```
+
+- Sub commands
+
+   Consider `Source/Commands/Users/CreateCommand.php`
+   
+   ```php
+   use PhpRepos\Console\Attributes\Argument;
+   use PhpRepos\Console\Attributes\Description;
+   
+   /**
+    * Creates a new user in the system.
+    */
+   return function (
+       #[Argument, Description('The username for the new user')]
+       string $username,
+   ) {
+       echo "Creating user: $username\n";
+   };
+   ```
+   
+   Run it:
+   
+   ```shell
+   ./console users/create johndoe
+   ```
+   
+   Help output:
+   
+   ```shell
+   ./console users/create --help
+   ```
+
+### Advanced Customization
+
+To customize command loading, create a file like `cli` in your project root. Here’s an example:
+
+```php
+#!/usr/bin/env php
+<?php
+
+use PhpRepos\Console\Config;
+use PhpRepos\FileManager\Path;
+use PhpRepos\FileManager\Resolver;
+
+$custom_console_config = new Config(
+    commands_directory: Path::from_string(__DIR__)->append('Src/MyCommands'),
+    commands_file_suffix: '.php',
+);
+
+require Resolver\realpath(__DIR__ . '/Packages/php-repos/console/console');
 ```
 
-## Documentation
+This changes the command directory to `Src/MyCommands` and uses `.php` as the suffix. Add `cli` to your `phpkg.config.json` under `entry-points` for it to work.
 
-All documents can be found under [documentation](https://phpkg.com/packages/console/documentations/getting-started).
+---
+
+## Contributing
+
+### Setting Up the Development Environment
+
+To contribute to the Console Package, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/php-repos/console.git
+   cd console
+   ```
+
+2. Install dependencies:
+   ```bash
+   phpkg install
+   ```
+3. Build the project:
+
+   ```bash
+   phpkg build
+   ```
+
+4. Contribute your changes.
+
+5. Test your changes:
+
+   ```bash
+   cd builds/development
+   phpkg run https://github.com/php-repos/test-runner.git
+   ```
