@@ -4,6 +4,8 @@ namespace Tests\ConsoleTest;
 
 use function PhpRepos\Cli\Output\assert_error;
 use function PhpRepos\Cli\Output\assert_line;
+use function PhpRepos\Datatype\Str\assert_equal;
+use function PhpRepos\FileManager\Paths\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 use function Tests\Helper\copy_commands;
@@ -18,8 +20,8 @@ test(
     title: 'it should check Source/Commands directory by default',
     case: function () {
         $output = shell_exec('php ./console');
-
-        assert_error("There is no command in ./Source/Commands path!", $output);
+        $root = root();
+        assert_error("There is no command in {$root}Source/Commands path!", $output);
     }
 );
 
@@ -90,7 +92,7 @@ Here you can see a list of available commands:
 
 EOD;
 
-        assert_true($expected === $output, 'Expected: ' . PHP_EOL . $expected . PHP_EOL . 'Actual output is:' . PHP_EOL . $output . PHP_EOL);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -390,7 +392,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when long option has invalid value.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
 
         $output = run('needs-force-option -f=any-value');
         $expected = <<<EOD
@@ -408,7 +410,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when short option has invalid value.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -482,7 +484,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when array option not passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -512,7 +514,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when the array option not passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -617,7 +619,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong output when short option passed without value' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -647,7 +649,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong output when long option passed without value' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -676,10 +678,10 @@ Options:
 EOD;
 
         $output = run('needs-username -u john --username');
-        assert_true($expected === $output, 'Wrong output when latest long option does not have value' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
 
         $output = run('needs-username --username=john -u');
-        assert_true($expected === $output, 'Wrong output when latest short option does not have value' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -709,7 +711,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when extra argument passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -770,7 +772,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when extra argument passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -820,7 +822,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when wrong bool argument passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -881,7 +883,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when required argument not passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();

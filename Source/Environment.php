@@ -2,7 +2,8 @@
 
 namespace PhpRepos\Console;
 
-use PhpRepos\FileManager\Path;
+use PhpRepos\FileManager\Filename;
+use function PhpRepos\FileManager\Paths\filename;
 
 /**
  * Class Environment
@@ -31,10 +32,7 @@ class Environment
      */
     public static function console(): static
     {
-        return new static(
-            Path::from_string($_SERVER['SCRIPT_FILENAME'])->leaf(),
-            Config::default(),
-        );
+        return new static(new Filename(filename($_SERVER['SCRIPT_FILENAME'])), Config::default());
     }
 
     /**

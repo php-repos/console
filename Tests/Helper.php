@@ -3,14 +3,13 @@
 namespace Tests\Helper;
 
 use PhpRepos\FileManager\Path;
-use function PhpRepos\FileManager\Directory\delete_recursive;
-use function PhpRepos\FileManager\Directory\make;
-use function PhpRepos\FileManager\Directory\preserve_copy_recursively;
+use function PhpRepos\FileManager\Directories\delete_recursive;
+use function PhpRepos\FileManager\Directories\preserve_copy_recursively;
+use function PhpRepos\FileManager\Paths\realpath;
 
 function copy_commands() {
-    $helper_commands = Path::from_string(__DIR__ . '/HelperCommands');
-    $commands_directory = Path::from_string(__DIR__ . '/../Source/Commands');
-    make($commands_directory);
+    $helper_commands = realpath(__DIR__ . '/HelperCommands');
+    $commands_directory = realpath(__DIR__ . '/../Source/Commands');
     preserve_copy_recursively($helper_commands, $commands_directory);
 }
 

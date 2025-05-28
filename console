@@ -10,4 +10,6 @@ if (isset($custom_console_config)) {
     $environment->config($custom_console_config);
 }
 
-exit(run($environment));
+global $argv;
+
+exit(run($environment, $argv));
