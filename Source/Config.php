@@ -3,6 +3,9 @@
 namespace PhpRepos\Console;
 
 use PhpRepos\FileManager\Path;
+use function PhpRepos\FileManager\Paths\append;
+use function PhpRepos\FileManager\Paths\parent;
+use function PhpRepos\FileManager\Paths\root;
 
 /**
  * Configuration class for console applications.
@@ -28,7 +31,7 @@ class Config
     public static function default(): static
     {
         return new static(
-            commands_directory: Path::from_string($_SERVER['SCRIPT_FILENAME'])->sibling('Source/Commands'),
+            commands_directory: Path::from(append(root(), parent($_SERVER['SCRIPT_FILENAME']), 'Source/Commands')),
             commands_file_suffix: 'Command.php',
             additional_supported_options: '',
         );

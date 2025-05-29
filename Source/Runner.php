@@ -9,13 +9,20 @@ use PhpRepos\Console\CommandParameter;
 use PhpRepos\Console\Environment;
 use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
 use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
-use PhpRepos\Console\ParamCollection;
+use PhpRepos\Console\Signals\CommandExecutionCompleted;
+use PhpRepos\Console\Signals\RunningConsoleCommand;
+use PhpRepos\Console\Signals\ConsoleSessionStarted;
 use PhpRepos\Datatype\Map;
-use PhpRepos\Datatype\Pair;
 use PhpRepos\FileManager\Path;
+use PhpRepos\Observer\Observer;
 use ReflectionException;
+use ReflectionParameter;
 use function PhpRepos\Console\Reflection\docblock_to_text;
+use function PhpRepos\Console\Reflection\function_parameters;
+use function PhpRepos\Datatype\Arr\any;
+use function PhpRepos\Datatype\Arr\filter;
 use function PhpRepos\Datatype\Arr\first;
+use function PhpRepos\Datatype\Arr\map;
 use function PhpRepos\Datatype\Arr\max_key_length;
 use function PhpRepos\Datatype\Arr\reduce;
 use function PhpRepos\Datatype\Str\after_first_occurrence;
@@ -23,21 +30,22 @@ use function PhpRepos\Datatype\Str\concat;
 use function PhpRepos\Datatype\Str\first_line;
 use function PhpRepos\Datatype\Str\kebab_case;
 use function PhpRepos\Datatype\Str\prepend_when_exists;
-use function PhpRepos\FileManager\Directory\exists;
-use function PhpRepos\FileManager\Directory\is_empty;
-use function PhpRepos\FileManager\Directory\ls_recursively;
+use function PhpRepos\FileManager\Directories\exists;
+use function PhpRepos\FileManager\Directories\is_empty;
+use function PhpRepos\FileManager\Directories\ls_all;
 
 /**
  * Run the console application with the given configuration.
  *
  * @param Environment $environment The environment for the console application.
+ * @param array $argv The passed arguments from argv
  *
  * @return int The exit code.
  * @throws ReflectionException
  */
-function run(Environment $environment): int
+function run(Environment $environment, array $argv): int
 {
-    global $argv;
+    Observer\send(ConsoleSessionStarted::by($argv));
 
     $help_options = getopt('h', ['help'], $command_index);
     $should_show_help = isset($help_options['h']) || isset($help_options['help']);
@@ -59,10 +67,9 @@ EOD);
         return 1;
     }
 
-    // List all available commands if no specific command is provided.
-    $commands = ls_recursively($environment->config->commands_directory)
-        ->vertices()
-        ->filter(fn (Path $path) => is_file($path) && str_ends_with($path, $environment->config->commands_file_suffix));
+    $commands = filter(ls_all($environment->config->commands_directory), fn ($path) => is_file($path) && str_ends_with($path, $environment->config->commands_file_suffix));
+
+    $commands = map($commands, fn ($path_string) => Path::from($path_string));
 
     if (! $command_name) {
         Output\line(<<<EOD
@@ -71,10 +78,12 @@ Usage: $environment->entry_point_name {$environment->config->additional_supporte
 EOD);
         Output\write(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
 
-        $commands = $commands->reduce(function ($commands, Path $command_path) use ($environment) {
+        $commands = reduce($commands, function ($commands, Path $command_path) use ($environment) {
             $commands[guess_name($environment, $command_path)] = first_line(docblock_to_text(require $command_path));
             return $commands;
         }, []);
+
+        ksort($commands);
 
         $max_key_length = max_key_length($commands);
 
@@ -87,9 +96,7 @@ EOD);
         return 0;
     }
 
-    $command_path = first(
-        $commands->filter(fn (Path $path) => guess_name($environment, $path) === $command_name)->items()
-    );
+    $command_path = first($commands, fn (Path $path) => guess_name($environment, $path) === $command_name);
 
     if (is_null($command_path)) {
         Output\error("Command $command_name not found!");
@@ -105,9 +112,11 @@ EOD);
             exit(0);
         }
 
+        Observer\send(RunningConsoleCommand::from_path($command_path));
         $return = execute(require $command_path, Arguments::from_argv());
-
-        exit($return !== null ? $return : 0);
+        $return = $return !== null ? $return : 0;
+        Observer\send(CommandExecutionCompleted::successfully($command_path, $return));
+        exit($return);
     } catch (InvalidCommandPromptException $exception) {
         Output\error('Error: ' . $exception->getMessage());
         Output\line(command_help($environment, $command_name, $command));
@@ -134,67 +143,52 @@ EOD);
  */
 function execute(Closure $command, Arguments $arguments): ?int
 {
-    $command_parameters = ParamCollection::from($command);
+    $parameters = function_parameters($command);
+    $command_parameters = new Map(map($parameters, fn (ReflectionParameter $param) => [CommandParameter::create($param), null]));
 
-    $parameters = new Map();
+    $command_parameters->map(function (mixed $value, CommandParameter $command_parameter) use ($arguments) {
+        return $command_parameter->is_option && ! $command_parameter->wants_excessive_arguments ? $arguments->take_option($command_parameter) : $value;
+    });
 
-    /** @var Map $parameters */
-    $parameters = $command_parameters
-        ->except(fn (CommandParameter $command_parameter) => $command_parameter->wants_excessive_arguments)
-        ->reduce(
-            function (Map $parameters, CommandParameter $command_parameter) use ($arguments) {
-                return $command_parameter->is_option
-                    ? $parameters->put(new Pair($command_parameter->name, $arguments->take_option($command_parameter)))
-                    : $parameters->put(new Pair($command_parameter->name, null));
-            },
-            $parameters
-        );
+    $command_parameters->map(function (mixed $value, CommandParameter $command_parameter) use ($arguments) {
+        if ($command_parameter->wants_excessive_arguments) {
+            return $value;
+        }
 
-    /** @var Map $parameters */
-    $parameters = $command_parameters
-        ->except(fn (CommandParameter $command_parameter) => $command_parameter->wants_excessive_arguments)
-        ->reduce(function (map $parameters, CommandParameter $command_parameter) use ($arguments) {
-            $parameter = $parameters->first(fn (Pair $parameter) => $parameter->key === $command_parameter->name);
-            $value = $parameter->value;
-
-            if ($value === null) {
-                if ($command_parameter->accepts_argument) {
-                    $value = $arguments->take_argument($command_parameter);
-                }
-
-                $value = is_null($value) ? $command_parameter->default_value : $value;
+        if ($value === null) {
+            if ($command_parameter->accepts_argument) {
+                $value = $arguments->take_argument($command_parameter);
             }
 
-            if ($value === null && $command_parameter->type !== 'bool' && ! $command_parameter->is_optional) {
-                if ($command_parameter->accepts_argument) {
-                    $message = "Argument `$command_parameter->name` is required.";
-                } else {
-                    $hint = concat('|', $command_parameter->short_option, $command_parameter->long_option);
-                    $message = "Option `$hint` is required.";
-                }
+            $value = is_null($value) ? $command_parameter->default_value : $value;
+        }
 
-                throw new InvalidCommandPromptException($message);
+        if ($value === null && $command_parameter->type !== 'bool' && ! $command_parameter->is_optional) {
+            if ($command_parameter->accepts_argument) {
+                $message = "Argument `$command_parameter->name` is required.";
+            } else {
+                $hint = concat('|', $command_parameter->short_option, $command_parameter->long_option);
+                $message = "Option `$hint` is required.";
             }
 
-            $parameters->push($parameter->value($value));
+            throw new InvalidCommandPromptException($message);
+        }
 
-            return $parameters;
-        }, $parameters);
+        return $value;
+    });
 
-    if ($command_parameters->has(fn (CommandParameter $parameter) => $parameter->wants_excessive_arguments)) {
-        $excessive_arguments_parameter = $command_parameters->first(fn (CommandParameter $parameter) => $parameter->wants_excessive_arguments);
-        $parameters->put(new Pair($excessive_arguments_parameter->name, $arguments->take_all()));
-    } else if (! $arguments->all_used()) {
+    if (any($command_parameters, fn (array $pair) => $pair['key']->wants_excessive_arguments)) {
+        $excessive_values = $arguments->take_all();
+        $command_parameters->map(function (mixed $value, CommandParameter $command_parameter) use ($excessive_values) {
+           return $command_parameter->wants_excessive_arguments ? $excessive_values : $value;
+        });
+    }  else if (! $arguments->all_used()) {
         throw new InvalidCommandPromptException('You passed invalid argument to the command.');
     }
 
-    $command_parameters = $parameters->reduce(function (array $command_parameters, Pair $pair) {
-        $command_parameters[$pair->key] = $pair->value;
+    $command_parameters = Map::from(map($command_parameters, fn (array $pair) => ['key' => $pair['key']->name, 'value' => $pair['value']]));
 
-        return $command_parameters;
-    }, []);
-
-    return call_user_func_array($command, $command_parameters);
+    return call_user_func_array($command, array_column($command_parameters->to_array(), 'value', 'key'));
 }
 
 /**
@@ -212,56 +206,48 @@ function execute(Closure $command, Arguments $arguments): ?int
  */
 function command_help(Environment $environment, string $name, Closure $command): string
 {
-    $parameters = ParamCollection::from($command);
+    $command_parameters = map(function_parameters($command), fn (ReflectionParameter $param) => CommandParameter::create($param));
 
-    $arguments = $parameters->filter(fn (CommandParameter $command_parameter) => $command_parameter->accepts_argument);
-    $options = $parameters->filter(fn (CommandParameter $command_parameter) => $command_parameter->is_option);
-
-    $arguments = $arguments->reduce(function (array $arguments, CommandParameter $command_parameter) {
+    $arguments = Map::from(map(filter($command_parameters, fn (CommandParameter $command_parameter) => $command_parameter->accepts_argument), function (CommandParameter $command_parameter) {
         $key = ($command_parameter->is_optional || $command_parameter->is_option) ? "[<$command_parameter->name>]" : "<$command_parameter->name>";
-        $arguments[$key] = $command_parameter->description;
 
-        return $arguments;
-    }, []);
+        return ['key' => $key, 'value' => $command_parameter->description];
+    }));
 
-    $options = $options->reduce(function (array $options, CommandParameter $command_parameter) {
-            $short_option = prepend_when_exists($command_parameter->short_option, '-');
-            $long_option = prepend_when_exists($command_parameter->long_option, '--');
+    $options = Map::from(map(filter($command_parameters, fn (CommandParameter $command_parameter) => $command_parameter->is_option), function (CommandParameter $command_parameter) {
+        $short_option = prepend_when_exists($command_parameter->short_option, '-');
+        $long_option = prepend_when_exists($command_parameter->long_option, '--');
 
-            $key = concat(', ', $short_option, $long_option);
+        $key = concat(', ', $short_option, $long_option);
 
-            if ($command_parameter->type !== 'bool') {
-                $key .= $command_parameter->is_optional ? " [<$command_parameter->name>]" : " <$command_parameter->name>";
-            }
+        if ($command_parameter->type !== 'bool') {
+            $key .= $command_parameter->is_optional ? " [<$command_parameter->name>]" : " <$command_parameter->name>";
+        }
 
-            $options[$key] = $command_parameter->description;
+        return ['key' => $key, 'value' => $command_parameter->description];
+    }));
 
-            return $options;
-        },
-        []
-    );
-
-    $arguments_short_doc = reduce($arguments, function ($arguments_doc, $description, $argument) {
-        return $arguments_doc . ' ' . $argument;
+    $arguments_short_doc = reduce($arguments, function ($arguments_doc, array $pair) {
+        return $arguments_doc . ' ' . $pair['key'];
     }, '');
 
-    if (empty($arguments)) {
+    if ($arguments->count() === 0) {
         $arguments_doc = PHP_EOL . 'This command does not accept any arguments.';
     } else {
-        $arguments_max_key_length = max_key_length($arguments);
-        $arguments_doc = reduce($arguments, function ($arguments_doc, $description, $argument) use ($arguments_max_key_length) {
-            return $arguments_doc . PHP_EOL . '  ' . str_pad($argument, $arguments_max_key_length) . ($description ? ' ' . $description : '');
+        $arguments_max_key_length = max(map($arguments, fn (array $pair) => strlen($pair['key'])));
+        $arguments_doc = reduce($arguments, function ($arguments_doc, $pair) use ($arguments_max_key_length) {
+            return $arguments_doc . PHP_EOL . '  ' . str_pad($pair['key'], $arguments_max_key_length) . ($pair['value'] ? ' ' . $pair['value'] : '');
         }, '');
     }
 
-    if (empty($options)) {
+    if ($options->count() === 0) {
         $options_short_doc = '';
         $options_doc = PHP_EOL . 'This command does not accept any options.';
     } else {
         $options_short_doc = ' [<options>]';
-        $options_max_key_length = max_key_length($options);
-        $options_doc = reduce($options, function ($options_doc, $description, $option) use ($options_max_key_length) {
-            return $options_doc . PHP_EOL . '  ' . str_pad($option, $options_max_key_length) . ' ' . $description;
+        $options_max_key_length = max(map($options, fn (array $pair) => strlen($pair['key'])));
+        $options_doc = reduce($options, function ($options_doc, array $pair) use ($options_max_key_length) {
+            return $options_doc . PHP_EOL . '  ' . str_pad($pair['key'], $options_max_key_length) . ' ' . $pair['value'];
         }, '');
     }
 

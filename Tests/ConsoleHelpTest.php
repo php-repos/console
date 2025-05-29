@@ -3,7 +3,7 @@
 namespace Tests\ConsoleHelpTest;
 
 use function PhpRepos\Cli\Output\assert_error;
-use function PhpRepos\TestRunner\Assertions\assert_true;
+use function PhpRepos\Datatype\Str\assert_equal;
 use function PhpRepos\TestRunner\Runner\test;
 use function Tests\Helper\copy_commands;
 use function Tests\Helper\delete_commands;
@@ -25,7 +25,7 @@ test(
 
 EOD;
 
-        assert_true($help_expected_output === $output, 'Expected: ' . PHP_EOL . $help_expected_output . PHP_EOL . 'Actual output is:' . PHP_EOL . $output . PHP_EOL);
+        assert_equal($output, $help_expected_output);
     }
 );
 
@@ -65,7 +65,7 @@ Here you can see a list of available commands:
 \e[39m    subdirectory/first
 
 EOD;
-        assert_true($expected === $output, 'Expected: ' . PHP_EOL . $expected . PHP_EOL . 'Actual output is:' . PHP_EOL . $output . PHP_EOL);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -112,7 +112,7 @@ Here you can see a list of available commands:
 
 EOD;
 
-        assert_true($expected === $output, 'Expected: ' . PHP_EOL . $expected . PHP_EOL . 'Actual output is:' . PHP_EOL . $output . PHP_EOL);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -155,7 +155,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'First command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -185,7 +185,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'Second command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -213,7 +213,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-email command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -241,7 +241,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-username command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -269,7 +269,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-optional-username command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -297,7 +297,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-optional-team command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -325,7 +325,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-force-option command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -353,7 +353,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'needs-ids command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -382,7 +382,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'needs-email-username-args command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -455,7 +455,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'needs-optional-argument command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -489,7 +489,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'full-fledged command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -517,7 +517,7 @@ This command does not accept any options.
 
 EOD;
 
-        assert_true($expected === $output, 'needs-bool-argument command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
@@ -545,7 +545,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'accept-excessive-arguments command\'s help did not get shown!' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
