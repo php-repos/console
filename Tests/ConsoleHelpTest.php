@@ -62,7 +62,7 @@ Here you can see a list of available commands:
 \e[39m    needs-username
 \e[39m    no-type
 \e[39m    second                              This is a description
-\e[39m    subdirectory/first
+\e[39m    subdirectory first
 
 EOD;
         assert_equal($output, $expected);
@@ -108,7 +108,7 @@ Here you can see a list of available commands:
 \e[39m    needs-username
 \e[39m    no-type
 \e[39m    second                              This is a description
-\e[39m    subdirectory/first
+\e[39m    subdirectory first
 
 EOD;
 

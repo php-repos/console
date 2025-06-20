@@ -21,7 +21,6 @@ use function PhpRepos\Console\Reflection\docblock_to_text;
 use function PhpRepos\Console\Reflection\function_parameters;
 use function PhpRepos\Datatype\Arr\any;
 use function PhpRepos\Datatype\Arr\filter;
-use function PhpRepos\Datatype\Arr\first;
 use function PhpRepos\Datatype\Arr\map;
 use function PhpRepos\Datatype\Arr\max_key_length;
 use function PhpRepos\Datatype\Arr\reduce;
@@ -49,6 +48,8 @@ function run(Environment $environment, array $argv): int
 
     $help_options = getopt('h', ['help'], $command_index);
     $should_show_help = isset($help_options['h']) || isset($help_options['help']);
+    $command_string = isset($argv[$command_index]) ? trim(reduce(array_slice($argv, $command_index), fn ($carry, $section) => $carry . " $section", '')) : '';
+
     $command_name = $argv[$command_index] ?? null;
 
     // Check if the commands directory exists and is not empty.
@@ -96,14 +97,50 @@ EOD);
         return 0;
     }
 
-    $command_path = first($commands, fn (Path $path) => guess_name($environment, $path) === $command_name);
+    $possible_commands = reduce($commands, function (array $carry, Path $path) use ($command_string, $environment) {
+        if (str_starts_with($command_string, guess_name($environment, $path))) {
+            $carry[] = $path;
+        }
 
-    if (is_null($command_path)) {
+        return $carry;
+    }, []);
+
+
+    if (empty($possible_commands)) {
         Output\error("Command $command_name not found!");
 
         return 1;
     }
 
+    $best_path = null;
+    $best_score = [-1, -1];
+
+    $input_words = explode(' ', $command_string);
+
+    foreach ($possible_commands as $path) {
+        $guessed = guess_name($environment, $path);
+        $guessed_words = explode(' ', $guessed);
+
+        $matched = 0;
+        for ($i = 0; $i < min(count($input_words), count($guessed_words)); $i++) {
+            if ($input_words[$i] === $guessed_words[$i]) {
+                $matched++;
+            } else {
+                break;
+            }
+        }
+
+        $total_chars = strlen(implode('', $guessed_words));
+
+        $score = [$matched, $total_chars];
+
+        if ($score > $best_score) {
+            $best_score = $score;
+            $best_path = $path;
+        }
+    }
+
+    $command_path = $best_path;
     $command = require $command_path;
 
     try {
@@ -113,7 +150,8 @@ EOD);
         }
 
         Observer\send(RunningConsoleCommand::from_path($command_path));
-        $return = execute(require $command_path, Arguments::from_argv());
+        $offset = count(explode(' ', guess_name($environment, $command_path)));
+        $return = execute(require $command_path, Arguments::from_argv($offset));
         $return = $return !== null ? $return : 0;
         Observer\send(CommandExecutionCompleted::successfully($command_path, $return));
         exit($return);
@@ -284,7 +322,7 @@ function guess_name(Environment $environment, Path $command_path): string
 
     $name = '';
     foreach ($parts as $index => $part) {
-        $name .= ($index > 0 ? DIRECTORY_SEPARATOR : '') . kebab_case($part);
+        $name .= ($index > 0 ? ' ' : '') . kebab_case($part);
     }
 
     return $name;

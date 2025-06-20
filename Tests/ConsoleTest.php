@@ -88,7 +88,7 @@ Here you can see a list of available commands:
 \e[39m    needs-username
 \e[39m    no-type
 \e[39m    second                              This is a description
-\e[39m    subdirectory/first
+\e[39m    subdirectory first
 
 EOD;
 
@@ -156,7 +156,7 @@ test(
         $output = run('second');
         assert_true(str_contains($output, 'The second command\'s output.'), 'Second command has not been run!');
 
-        $output = run('subdirectory/first');
+        $output = run('subdirectory first');
         assert_true(str_contains($output, 'The subdirectory first command\'s output.'), 'Subdirectory first command has not been run!');
     },
     before: function () {

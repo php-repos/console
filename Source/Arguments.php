@@ -31,11 +31,11 @@ class Arguments
      *
      * @return static A new Arguments instance.
      */
-    public static function from_argv(): static
+    public static function from_argv(int $offset): static
     {
         getopt('', [''], $command_index);
         global $argv;
-        $arguments = array_slice($argv, $command_index + 1);
+        $arguments = array_slice($argv, $command_index + $offset);
 
         return new static($arguments);
     }

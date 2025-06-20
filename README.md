@@ -221,13 +221,13 @@ Options:
    Run it:
    
    ```shell
-   ./console users/create johndoe
+   ./console users create johndoe
    ```
    
    Help output:
    
    ```shell
-   ./console users/create --help
+   ./console users create --help
    ```
 
 ## Advanced Customization
