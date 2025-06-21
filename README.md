@@ -38,7 +38,7 @@ Create commands by adding files under the `Source/Commands` directory. Use Pasca
 
 **Subcommands**
 
-Subcommands are supported via directory structure. For example, to create a `users:create` subcommand, add a file at `Source/Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using `/` as a separator.
+Subcommands are supported via directory structure. For example, to create a `users create` subcommand, add a file at `Source/Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using space as a separator.
 
 ### Defining Command Options
 
@@ -238,16 +238,35 @@ To customize command loading, create a file like `cli` in your project root. Her
 #!/usr/bin/env php
 <?php
 
-use PhpRepos\Console\Config;
+use PhpRepos\Console\Input;
 use PhpRepos\FileManager\Path;
-use PhpRepos\FileManager\Resolver;
+use function PhpRepos\Console\Runner\from_path;
+use function PhpRepos\Console\Runner\run;
+use function PhpRepos\FileManager\Paths\filename;
+use function PhpRepos\FileManager\Paths\root;
 
-$custom_console_config = new Config(
-    commands_directory: Path::from_string(__DIR__)->append('Src/MyCommands'),
-    commands_file_suffix: '.php',
-);
+$entrypoint = filename($_SERVER['SCRIPT_FILENAME']);
+$help_text = <<<EOD
+Usage: $entrypoint [-h | --help][-v]
+               <command> [<options>] [<args>]
+This is a custom help output for the console
+EOD;
 
-require Resolver\realpath(__DIR__ . '/Packages/php-repos/console/console');
+global $argv;
+
+$help_options = getopt('h', ['help'], $command_index);
+// Only care about the first help
+$wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $command_index === 2;
+
+$offset = $wants_help ? 2  : 1;
+
+$inputs = Input::make(array_slice($argv, $offset));
+$commands_directory = Path::from(root())->sub('Source/Commands');
+$command_handlers = from_path($commands_directory);
+
+$command_handlers->add('welcome', fn () => echo 'hello world!');
+
+exit(run($command_handlers, $inputs, $entrypoint, $help_text, $wants_help, $commands_directory));
 ```
 
 This changes the command directory to `Src/MyCommands` and uses `.php` as the suffix. Add `cli` to your `phpkg.config.json` under `entry-points` for it to work.

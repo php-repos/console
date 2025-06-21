@@ -3,53 +3,14 @@
 namespace PhpRepos\Console;
 
 use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
+use PhpRepos\Datatype\Collection;
 use function PhpRepos\Datatype\Arr\first;
 use function PhpRepos\Datatype\Arr\first_key;
 use function PhpRepos\Datatype\Arr\last;
 use function PhpRepos\Datatype\Arr\reduce;
 
-/**
- * Arguments class for processing command-line arguments and options.
- *
- * This class provides methods for parsing and extracting command-line arguments
- * and options based on specified parameter definitions.
- */
-class Arguments
+class Input extends Collection
 {
-    /**
-     * Constructor for the Arguments class.
-     *
-     * @param array $arguments An array of command-line arguments.
-     */
-    public function __construct(private array $arguments) {}
-
-    /**
-     * Create an Arguments instance from the global $argv array.
-     *
-     * This method extracts command-line arguments after the script name and
-     * returns a new Arguments instance.
-     *
-     * @return static A new Arguments instance.
-     */
-    public static function from_argv(int $offset): static
-    {
-        getopt('', [''], $command_index);
-        global $argv;
-        $arguments = array_slice($argv, $command_index + $offset);
-
-        return new static($arguments);
-    }
-
-    /**
-     * Check if all arguments have been used.
-     *
-     * @return bool True if all arguments have been used; otherwise, false.
-     */
-    public function all_used(): bool
-    {
-        return empty($this->arguments);
-    }
-
     /**
      * Take an argument based on the specified parameter definition.
      *
@@ -66,7 +27,7 @@ class Arguments
         if ($parameter->type === 'array') {
             $value = $this->take_all();
         } else if ($parameter->type === 'bool') {
-            $value = $this->take_first();
+            $value = $this->take_first_one();
 
             if ($value === 'true') {
                 $value = true;
@@ -78,7 +39,7 @@ class Arguments
                 throw new InvalidCommandPromptException('Bool argument accepts true or false.');
             }
         } else {
-            $value = $this->take_first();
+            $value = $this->take_first_one();
         }
 
         return $value;
@@ -111,15 +72,15 @@ class Arguments
      */
     public function take_all(): array
     {
-        $temp = $this->arguments;
-        $this->arguments = [];
+        $temp = $this->items;
+        $this->items = [];
 
         return $temp;
     }
 
     private function take_option_as_array(CommandParameter $parameter)
     {
-        return reduce($this->arguments, function ($options, $argument, $index) use ($parameter) {
+        return reduce($this->items, function ($options, $argument, $index) use ($parameter) {
             if (str_starts_with($argument, '-')) {
                 if (str_starts_with($argument, '--')) {
                     if (str_starts_with($argument, "--$parameter->long_option=")) {
@@ -152,7 +113,7 @@ class Arguments
         }
 
         if ($option_index !== null) {
-            $argument = $this->arguments[$option_index];
+            $argument = $this->items[$option_index];
 
             if ($parameter->long_option && str_starts_with($argument, "--$parameter->long_option=")) {
                 throw new InvalidCommandPromptException("Long option `$parameter->long_option` must be boolean and does not accept values.");
@@ -181,24 +142,24 @@ class Arguments
 
         $value = null;
 
-        if (str_starts_with($this->arguments[$option_index], "--$parameter->long_option=")) {
-            $value = explode("--$parameter->long_option=", $this->arguments[$option_index])[1];
-        } else if ($this->arguments[$option_index] === "--$parameter->long_option") {
-            if (! isset($this->arguments[$option_index + 1])) {
+        if (str_starts_with($this->items[$option_index], "--$parameter->long_option=")) {
+            $value = explode("--$parameter->long_option=", $this->items[$option_index])[1];
+        } else if ($this->items[$option_index] === "--$parameter->long_option") {
+            if (! isset($this->items[$option_index + 1])) {
                 throw new InvalidCommandPromptException('Option needs value.');
             }
-            $value = $this->arguments[$option_index + 1];
-        } else if (str_starts_with($this->arguments[$option_index], "-$parameter->short_option=")) {
-            $value = explode("-$parameter->short_option=", $this->arguments[$option_index])[1];
-        } else if ($this->arguments[$option_index] === "-$parameter->short_option") {
-            if (! isset($this->arguments[$option_index + 1])) {
+            $value = $this->items[$option_index + 1];
+        } else if (str_starts_with($this->items[$option_index], "-$parameter->short_option=")) {
+            $value = explode("-$parameter->short_option=", $this->items[$option_index])[1];
+        } else if ($this->items[$option_index] === "-$parameter->short_option") {
+            if (! isset($this->items[$option_index + 1])) {
                 throw new InvalidCommandPromptException('Option needs value.');
             }
-            $value = $this->arguments[$option_index + 1];
+            $value = $this->items[$option_index + 1];
         }
 
         foreach ($option_indexes as $index) {
-            if (str_contains($this->arguments[$index], '=')) {
+            if (str_contains($this->items[$index], '=')) {
                 $this->use($index);
             } else {
                 $this->use($index)->use($index + 1);
@@ -210,7 +171,7 @@ class Arguments
 
     private function option_indexes(CommandParameter $parameter): array
     {
-        return reduce($this->arguments, function ($option_indexes, $argument, $index) use ($parameter) {
+        return reduce($this->items, function ($option_indexes, $argument, $index) use ($parameter) {
             if (
                 $parameter->long_option && (
                     str_starts_with($argument, "--$parameter->long_option=")
@@ -235,19 +196,19 @@ class Arguments
 
     private function use(int $index): self
     {
-        unset($this->arguments[$index]);
+        unset($this->items[$index]);
 
         return $this;
     }
 
-    private function take_first(): ?string
+    private function take_first_one(): ?string
     {
-        if (empty($this->arguments)) {
+        if (empty($this->items)) {
             return null;
         }
 
-        $value = first($this->arguments);
-        $this->use(first_key($this->arguments));
+        $value = first($this->items);
+        $this->use(first_key($this->items));
 
         return $value;
     }

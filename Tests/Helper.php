@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Helper;
-
 use PhpRepos\FileManager\Path;
 use function PhpRepos\FileManager\Directories\delete_recursive;
 use function PhpRepos\FileManager\Directories\preserve_copy_recursively;

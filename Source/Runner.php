@@ -2,13 +2,12 @@
 
 namespace PhpRepos\Console\Runner;
 
-use Closure;
 use PhpRepos\Cli\Output;
-use PhpRepos\Console\Arguments;
+use PhpRepos\Console\CommandHandlers;
 use PhpRepos\Console\CommandParameter;
-use PhpRepos\Console\Environment;
 use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
 use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
+use PhpRepos\Console\Input;
 use PhpRepos\Console\Signals\CommandExecutionCompleted;
 use PhpRepos\Console\Signals\RunningConsoleCommand;
 use PhpRepos\Console\Signals\ConsoleSessionStarted;
@@ -30,61 +29,89 @@ use function PhpRepos\Datatype\Str\first_line;
 use function PhpRepos\Datatype\Str\kebab_case;
 use function PhpRepos\Datatype\Str\prepend_when_exists;
 use function PhpRepos\FileManager\Directories\exists;
-use function PhpRepos\FileManager\Directories\is_empty;
 use function PhpRepos\FileManager\Directories\ls_all;
 
 /**
- * Run the console application with the given configuration.
+ * Loads commands from the given commands path
  *
- * @param Environment $environment The environment for the console application.
- * @param array $argv The passed arguments from argv
+ * @param Path $root
+ * @param string $commands_file_suffix
+ * @return CommandHandlers
+ */
+function from_path(Path $root, string $commands_file_suffix = 'Command.php'): CommandHandlers
+{
+    $command_handlers = new CommandHandlers();
+
+    if (!exists($root)) {
+        return $command_handlers;
+    }
+
+    $files = filter(ls_all($root), fn (string $path) => is_file($path) && str_ends_with($path, $commands_file_suffix));
+
+    sort($files);
+
+    return reduce($files, function (CommandHandlers $command_handlers, string $path) use ($root, $commands_file_suffix) {
+        $handler = require $path;
+        $relative_part = after_first_occurrence($path, $root . DIRECTORY_SEPARATOR);
+        $relative_part = str_replace($commands_file_suffix, '', $relative_part);
+        $parts = explode(DIRECTORY_SEPARATOR, $relative_part);
+
+        $name = '';
+        foreach ($parts as $index => $part) {
+            $name .= ($index > 0 ? ' ' : '') . kebab_case($part);
+        }
+        return $command_handlers->add($name, $handler);
+    }, $command_handlers);
+}
+
+/**
+ * Run the console application with the given input command and arguments.
  *
- * @return int The exit code.
+ * @param CommandHandlers $command_handlers
+ * @param Input $inputs
+ * @param string $entrypoint
+ * @param string $help_text
+ * @param bool $wants_help
+ * @param Path $commands_directory
+ * @return int
  * @throws ReflectionException
  */
-function run(Environment $environment, array $argv): int
+function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoint, string $help_text, bool $wants_help, Path $commands_directory): int
 {
-    Observer\send(ConsoleSessionStarted::by($argv));
+    Observer\send(ConsoleSessionStarted::by($inputs->to_array()));
 
-    $help_options = getopt('h', ['help'], $command_index);
-    $should_show_help = isset($help_options['h']) || isset($help_options['help']);
-    $command_string = isset($argv[$command_index]) ? trim(reduce(array_slice($argv, $command_index), fn ($carry, $section) => $carry . " $section", '')) : '';
-
-    $command_name = $argv[$command_index] ?? null;
-
-    // Check if the commands directory exists and is not empty.
-    if (! exists($environment->config->commands_directory) || is_empty($environment->config->commands_directory)) {
-        if ($should_show_help) {
-            Output\line(<<<EOD
-Usage: $environment->entry_point_name {$environment->config->additional_supported_options}[-h | --help]
-               <command> [<options>] [<args>]
-EOD);
-
+    if ($command_handlers->count() === 0) {
+        if ($wants_help) {
+            Output\line($help_text);
             return 0;
         }
 
-        Output\error("There is no command in {$environment->config->commands_directory} path!");
+        Output\error("There is no command in $commands_directory path!");
 
         return 1;
     }
 
-    $commands = filter(ls_all($environment->config->commands_directory), fn ($path) => is_file($path) && str_ends_with($path, $environment->config->commands_file_suffix));
+    $command_index = 0;
 
-    $commands = map($commands, fn ($path_string) => Path::from($path_string));
+    foreach ($inputs as $index => $input) {
+        $input_string = implode(' ', array_slice($inputs->to_array(), 0, $index + 1));
+        if (count(filter($command_handlers, fn (array $command_handler) => $command_handler['key'] === $input_string)) === 1) {
+            $command_index = $index;
+            break;
+        }
+    }
 
-    if (! $command_name) {
-        Output\line(<<<EOD
-Usage: $environment->entry_point_name {$environment->config->additional_supported_options}[-h | --help]
-               <command> [<options>] [<args>]
-EOD);
+    $input_command = implode(' ', array_slice($inputs->to_array(), 0, $command_index + 1));
+    $inputs = Input::make(array_slice($inputs->to_array(), $command_index + 1));
+
+    if ($input_command === '') {
+        Output\line($help_text);
         Output\write(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
 
-        $commands = reduce($commands, function ($commands, Path $command_path) use ($environment) {
-            $commands[guess_name($environment, $command_path)] = first_line(docblock_to_text(require $command_path));
+        $commands = reduce($command_handlers, function ($commands, array $command_handler) {
+            $commands[$command_handler['key']] = first_line(docblock_to_text($command_handler['value']));
             return $commands;
         }, []);
-
-        ksort($commands);
 
         $max_key_length = max_key_length($commands);
 
@@ -97,67 +124,60 @@ EOD);
         return 0;
     }
 
-    $possible_commands = reduce($commands, function (array $carry, Path $path) use ($command_string, $environment) {
-        if (str_starts_with($command_string, guess_name($environment, $path))) {
-            $carry[] = $path;
-        }
-
-        return $carry;
-    }, []);
-
-
-    if (empty($possible_commands)) {
-        Output\error("Command $command_name not found!");
-
-        return 1;
-    }
-
-    $best_path = null;
     $best_score = [-1, -1];
-
-    $input_words = explode(' ', $command_string);
-
-    foreach ($possible_commands as $path) {
-        $guessed = guess_name($environment, $path);
-        $guessed_words = explode(' ', $guessed);
+    $command_handler = reduce($command_handlers, function (array $carry, array $possible_command_handler) use (&$best_score, $input_command) {
+        if (!str_starts_with($possible_command_handler['key'], $input_command)) {
+            return $carry;
+        }
+        $command_words = explode(' ', $possible_command_handler['key']);
+        $input_words = explode(' ', $input_command);
 
         $matched = 0;
-        for ($i = 0; $i < min(count($input_words), count($guessed_words)); $i++) {
-            if ($input_words[$i] === $guessed_words[$i]) {
+        for ($i = 0; $i < min(count($input_words), count($command_words)); $i++) {
+            if ($input_words[$i] === $command_words[$i]) {
                 $matched++;
             } else {
                 break;
             }
         }
 
-        $total_chars = strlen(implode('', $guessed_words));
+        if ($matched === 0) {
+            return $carry;
+        }
+
+        $total_chars = strlen(implode('', $command_words));
 
         $score = [$matched, $total_chars];
 
         if ($score > $best_score) {
             $best_score = $score;
-            $best_path = $path;
+            $carry = $possible_command_handler;
         }
+
+        return $carry;
+
+    }, []);
+
+    if (empty($command_handler)) {
+        Output\error("Command $input_command not found!");
+
+        return 1;
     }
 
-    $command_path = $best_path;
-    $command = require $command_path;
-
     try {
-        if ($should_show_help) {
-            Output\line(command_help($environment, $command_name, $command));
-            exit(0);
+        if ($wants_help) {
+            Output\line(command_help($entrypoint, $input_command, $command_handler['value']));
+            return 0;
         }
 
-        Observer\send(RunningConsoleCommand::from_path($command_path));
-        $offset = count(explode(' ', guess_name($environment, $command_path)));
-        $return = execute(require $command_path, Arguments::from_argv($offset));
+        Observer\send(RunningConsoleCommand::command($command_handler['key']));
+        $return = execute($command_handler['value'], $inputs);
         $return = $return !== null ? $return : 0;
-        Observer\send(CommandExecutionCompleted::successfully($command_path, $return));
-        exit($return);
+        Observer\send(CommandExecutionCompleted::successfully($command_handler['key'], $return));
+        return $return;
     } catch (InvalidCommandPromptException $exception) {
         Output\error('Error: ' . $exception->getMessage());
-        Output\line(command_help($environment, $command_name, $command));
+        Output\line(command_help($entrypoint, $input_command, $command_handler['value']));
     } catch (InvalidCommandDefinitionException $exception) {
         Output\error('Error: ' . $exception->getMessage());
     }
@@ -168,18 +188,18 @@ EOD);
 /**
  * Execute a given command with the provided arguments.
  *
- * This function takes a closure representing the command and a set of arguments to be passed to the command.
+ * This function takes a handler representing the command and a set of arguments to be passed to the command.
  * It resolves the command parameters and their values and executes the command, returning the command's exit code.
  *
- * @param Closure $command The closure representing the command to be executed.
- * @param Arguments $arguments The arguments to be passed to the command.
+ * @param callable $command The callback representing the command to be executed.
+ * @param Input $arguments The arguments to be passed to the command.
  *
  * @return int|null The exit code of the executed command, or null if the command does not return an exit code.
  *
  * @throws InvalidCommandPromptException If the provided arguments are invalid or missing.
  * @throws ReflectionException
  */
-function execute(Closure $command, Arguments $arguments): ?int
+function execute(callable $command, Input $arguments): ?int
 {
     $parameters = function_parameters($command);
     $command_parameters = new Map(map($parameters, fn (ReflectionParameter $param) => [CommandParameter::create($param), null]));
@@ -220,7 +240,7 @@ function execute(Closure $command, Arguments $arguments): ?int
         $command_parameters->map(function (mixed $value, CommandParameter $command_parameter) use ($excessive_values) {
            return $command_parameter->wants_excessive_arguments ? $excessive_values : $value;
         });
-    }  else if (! $arguments->all_used()) {
+    }  else if (! empty($arguments->to_array())) {
         throw new InvalidCommandPromptException('You passed invalid argument to the command.');
     }
 
@@ -232,17 +252,17 @@ function execute(Closure $command, Arguments $arguments): ?int
 /**
  * Generate a help message for a given command.
  *
- * This function takes the name of a command and its associated closure, and generates a help message
+ * This function takes the name of a command and its associated handler, and generates a help message
  * describing the command's usage, description, arguments, and options.
  *
- * @param Environment $environment The console environment
+ * @param string $entrypoint
  * @param string $name The name of the command.
- * @param Closure $command The closure representing the command.
+ * @param callable $command The handler representing the command.
  *
  * @return string The generated help message for the command.
  * @throws ReflectionException
  */
-function command_help(Environment $environment, string $name, Closure $command): string
+function command_help(string $entrypoint, string $name, callable $command): string
 {
     $command_parameters = map(function_parameters($command), fn (ReflectionParameter $param) => CommandParameter::create($param));
 
@@ -293,7 +313,7 @@ function command_help(Environment $environment, string $name, Closure $command):
     $description = $description ?: 'No description provided for the command.';
 
     return <<<EOD
-Usage: $environment->entry_point_name $name$options_short_doc$arguments_short_doc
+Usage: $entrypoint $name$options_short_doc$arguments_short_doc
 
 Description:
 $description
@@ -302,28 +322,4 @@ Arguments:$arguments_doc
 
 Options:$options_doc
 EOD;
-}
-
-/**
- * Guess the name of a command based on its file path and configuration.
- *
- * This function calculates the name of a command by analyzing its file path and applying
- * the configuration settings for command file suffixes and directory structure.
- *
- * @param Environment $environment The console environment
- * @param Path $command_path The full file path to the command.
- * @return string The guessed name of the command.
- */
-function guess_name(Environment $environment, Path $command_path): string
-{
-    $relative_part = after_first_occurrence($command_path, $environment->config->commands_directory->string() . DIRECTORY_SEPARATOR);
-    $relative_part = str_replace($environment->config->commands_file_suffix, '', $relative_part);
-    $parts = explode(DIRECTORY_SEPARATOR, $relative_part);
-
-    $name = '';
-    foreach ($parts as $index => $part) {
-        $name .= ($index > 0 ? ' ' : '') . kebab_case($part);
-    }
-
-    return $name;
 }

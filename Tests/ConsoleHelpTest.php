@@ -1,12 +1,10 @@
 <?php
 
-namespace Tests\ConsoleHelpTest;
-
 use function PhpRepos\Cli\Output\assert_error;
 use function PhpRepos\Datatype\Str\assert_equal;
 use function PhpRepos\TestRunner\Runner\test;
-use function Tests\Helper\copy_commands;
-use function Tests\Helper\delete_commands;
+
+include_once __DIR__ . '/Helper.php';
 
 
 function help(string $prompt): string
@@ -63,6 +61,7 @@ Here you can see a list of available commands:
 \e[39m    no-type
 \e[39m    second                              This is a description
 \e[39m    subdirectory first
+\e[39m    supports-help
 
 EOD;
         assert_equal($output, $expected);
@@ -109,6 +108,7 @@ Here you can see a list of available commands:
 \e[39m    no-type
 \e[39m    second                              This is a description
 \e[39m    subdirectory first
+\e[39m    supports-help
 
 EOD;
 

@@ -1,15 +1,13 @@
 <?php
 
-namespace Tests\ConsoleTest;
-
 use function PhpRepos\Cli\Output\assert_error;
 use function PhpRepos\Cli\Output\assert_line;
 use function PhpRepos\Datatype\Str\assert_equal;
 use function PhpRepos\FileManager\Paths\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
-use function Tests\Helper\copy_commands;
-use function Tests\Helper\delete_commands;
+
+include_once __DIR__ . '/Helper.php';
 
 function run(string $prompt): string
 {
@@ -89,6 +87,7 @@ Here you can see a list of available commands:
 \e[39m    no-type
 \e[39m    second                              This is a description
 \e[39m    subdirectory first
+\e[39m    supports-help
 
 EOD;
 
@@ -929,6 +928,36 @@ test(
         $output = run('needs-optional-option-with-value');
 
         assert_line('Username passed as empty string', $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should allow commands handle late h',
+    case: function () {
+        $output = run('supports-help -h');
+
+        assert_line('h is true and help is false', $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should allow commands handle late h',
+    case: function () {
+        $output = run('supports-help --help');
+
+        assert_line('h is false and help is true', $output);
     },
     before: function () {
         copy_commands();
