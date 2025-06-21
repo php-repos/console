@@ -23,7 +23,7 @@ $wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $co
 $offset = $wants_help ? 2  : 1;
 
 $inputs = Input::make(array_slice($argv, $offset));
-$commands_directory = Path::from(root())->sub('Source/Commands');
+$commands_directory = Path::from(root())->sub('Commands');
 $command_handlers = from_path($commands_directory);
 
 exit(run($command_handlers, $inputs, $entrypoint, $help_text, $wants_help, $commands_directory));

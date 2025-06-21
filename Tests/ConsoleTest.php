@@ -15,11 +15,11 @@ function run(string $prompt): string
 }
 
 test(
-    title: 'it should check Source/Commands directory by default',
+    title: 'it should check Commands directory by default',
     case: function () {
         $output = shell_exec('php ./console');
         $root = root();
-        assert_error("There is no command in {$root}Source/Commands path!", $output);
+        assert_error("There is no command in {$root}Commands path!", $output);
     }
 );
 

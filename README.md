@@ -34,11 +34,11 @@ Both methods provide identical access to the Console Package’s CLI commands—
 
 ## Creating Commands
 
-Create commands by adding files under the `Source/Commands` directory. Use PascalCase filenames matching the command name (e.g., `MakeUserCommand.php` for `make-user`).
+Create commands by adding files under the `Commands` directory. Use PascalCase filenames matching the command name (e.g., `MakeUserCommand.php` for `make-user`).
 
 **Subcommands**
 
-Subcommands are supported via directory structure. For example, to create a `users create` subcommand, add a file at `Source/Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using space as a separator.
+Subcommands are supported via directory structure. For example, to create a `users create` subcommand, add a file at `Commands/Users/CreateCommand.php`. The Console Package maps directory paths to command names using space as a separator.
 
 ### Defining Command Options
 
@@ -201,7 +201,7 @@ Options:
 
 - Sub commands
 
-   Consider `Source/Commands/Users/CreateCommand.php`
+   Consider `Commands/Users/CreateCommand.php`
    
    ```php
    use PhpRepos\Console\Attributes\Argument;
@@ -261,7 +261,7 @@ $wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $co
 $offset = $wants_help ? 2  : 1;
 
 $inputs = Input::make(array_slice($argv, $offset));
-$commands_directory = Path::from(root())->sub('Source/Commands');
+$commands_directory = Path::from(root())->sub('Commands');
 $command_handlers = from_path($commands_directory);
 
 $command_handlers->add('welcome', fn () => echo 'hello world!');
