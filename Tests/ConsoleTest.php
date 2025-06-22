@@ -1,15 +1,13 @@
 <?php
 
-namespace Tests\ConsoleTest;
-
 use function PhpRepos\Cli\Output\assert_error;
 use function PhpRepos\Cli\Output\assert_line;
 use function PhpRepos\Datatype\Str\assert_equal;
 use function PhpRepos\FileManager\Paths\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
-use function Tests\Helper\copy_commands;
-use function Tests\Helper\delete_commands;
+
+include_once __DIR__ . '/Helper.php';
 
 function run(string $prompt): string
 {
@@ -17,11 +15,11 @@ function run(string $prompt): string
 }
 
 test(
-    title: 'it should check Source/Commands directory by default',
+    title: 'it should check Commands directory by default',
     case: function () {
         $output = shell_exec('php ./console');
         $root = root();
-        assert_error("There is no command in {$root}Source/Commands path!", $output);
+        assert_error("There is no command in {$root}Commands path!", $output);
     }
 );
 
@@ -88,7 +86,8 @@ Here you can see a list of available commands:
 \e[39m    needs-username
 \e[39m    no-type
 \e[39m    second                              This is a description
-\e[39m    subdirectory/first
+\e[39m    subdirectory first
+\e[39m    supports-help
 
 EOD;
 
@@ -156,7 +155,7 @@ test(
         $output = run('second');
         assert_true(str_contains($output, 'The second command\'s output.'), 'Second command has not been run!');
 
-        $output = run('subdirectory/first');
+        $output = run('subdirectory first');
         assert_true(str_contains($output, 'The subdirectory first command\'s output.'), 'Subdirectory first command has not been run!');
     },
     before: function () {
@@ -929,6 +928,36 @@ test(
         $output = run('needs-optional-option-with-value');
 
         assert_line('Username passed as empty string', $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should allow commands handle late h',
+    case: function () {
+        $output = run('supports-help -h');
+
+        assert_line('h is true and help is false', $output);
+    },
+    before: function () {
+        copy_commands();
+    },
+    after: function () {
+        delete_commands();
+    }
+);
+
+test(
+    title: 'it should allow commands handle late h',
+    case: function () {
+        $output = run('supports-help --help');
+
+        assert_line('h is false and help is true', $output);
     },
     before: function () {
         copy_commands();

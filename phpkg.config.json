@@ -1,7 +1,6 @@
 {
     "map": {
-        "PhpRepos\\Console": "Source",
-        "Tests": "Tests"
+        "PhpRepos\\Console": "Source"
     },
     "autoloads": [],
     "excludes": [],

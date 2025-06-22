@@ -1,15 +1,29 @@
 #!/usr/bin/env php
 <?php
 
-use PhpRepos\Console\Environment;
+use PhpRepos\Console\Input;
+use PhpRepos\FileManager\Path;
+use function PhpRepos\Console\Runner\from_path;
 use function PhpRepos\Console\Runner\run;
+use function PhpRepos\FileManager\Paths\filename;
+use function PhpRepos\FileManager\Paths\root;
 
-$environment = Environment::console();
-
-if (isset($custom_console_config)) {
-    $environment->config($custom_console_config);
-}
+$entrypoint = filename($_SERVER['SCRIPT_FILENAME']);
+$help_text = <<<EOD
+Usage: $entrypoint [-h | --help]
+               <command> [<options>] [<args>]
+EOD;
 
 global $argv;
 
-exit(run($environment, $argv));
+$help_options = getopt('h', ['help'], $command_index);
+// Only care about the first help
+$wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $command_index === 2;
+
+$offset = $wants_help ? 2  : 1;
+
+$inputs = Input::make(array_slice($argv, $offset));
+$commands_directory = Path::from(root())->sub('Commands');
+$command_handlers = from_path($commands_directory);
+
+exit(run($command_handlers, $inputs, $entrypoint, $help_text, $wants_help, $commands_directory));
