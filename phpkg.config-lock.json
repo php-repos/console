@@ -9,14 +9,14 @@
         "https:\/\/github.com\/php-repos\/datatype.git": {
             "owner": "php-repos",
             "repo": "datatype",
-            "version": "v4.0.0",
-            "hash": "d29dc1c67d83217b20768a74a973f1b5fc4513ea"
+            "version": "v4.1.0",
+            "hash": "1ae490317fe131893d5175d3243ccbd5eba2f4c4"
         },
         "https:\/\/github.com\/php-repos\/file-manager.git": {
             "owner": "php-repos",
             "repo": "file-manager",
-            "version": "v5.0.0",
-            "hash": "c9635dc75c45a9b227bd9f9381974046573664ec"
+            "version": "v6.0.0",
+            "hash": "25242088549c5c8eaeeead8b5d3937f9fb8dd708"
         },
         "https:\/\/github.com\/php-repos\/observer.git": {
             "owner": "php-repos",
@@ -33,8 +33,8 @@
         "https:\/\/github.com\/brick\/math.git": {
             "owner": "brick",
             "repo": "math",
-            "version": "0.13.1",
-            "hash": "fc7ed316430118cc7836bf45faff18d5dfc8de04"
+            "version": "0.14.0",
+            "hash": "113a8ee2656b882d4c3164fa31aa6e12cbb7aaa2"
         },
         "https:\/\/github.com\/ramsey\/collection.git": {
             "owner": "ramsey",

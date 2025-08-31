@@ -29,7 +29,7 @@ use function PhpRepos\Datatype\Str\first_line;
 use function PhpRepos\Datatype\Str\kebab_case;
 use function PhpRepos\Datatype\Str\prepend_when_exists;
 use function PhpRepos\FileManager\Directories\exists;
-use function PhpRepos\FileManager\Directories\ls_all;
+use function PhpRepos\FileManager\Directories\ls_all_recursively;
 
 /**
  * Loads commands from the given commands path
@@ -46,7 +46,7 @@ function from_path(Path $root, string $commands_file_suffix = 'Command.php'): Co
         return $command_handlers;
     }
 
-    $files = filter(ls_all($root), fn (string $path) => is_file($path) && str_ends_with($path, $commands_file_suffix));
+    $files = filter(ls_all_recursively($root), fn (string $path) => is_file($path) && str_ends_with($path, $commands_file_suffix));
 
     sort($files);
 
