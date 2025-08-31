@@ -14,8 +14,8 @@
     "packages-directory": "Packages",
     "packages": {
         "https:\/\/github.com\/php-repos\/cli.git": "v3.0.1",
-        "https:\/\/github.com\/php-repos\/datatype.git": "v4.0.0",
-        "https:\/\/github.com\/php-repos\/file-manager.git": "v5.0.0",
+        "https:\/\/github.com\/php-repos\/datatype.git": "v4.1.0",
+        "https:\/\/github.com\/php-repos\/file-manager.git": "v6.0.0",
         "https:\/\/github.com\/php-repos\/observer.git": "v1.0.0"
     },
     "aliases": {
