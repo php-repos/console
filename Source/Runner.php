@@ -2,7 +2,6 @@
 
 namespace PhpRepos\Console\Runner;
 
-use PhpRepos\Cli\Output;
 use PhpRepos\Console\CommandHandlers;
 use PhpRepos\Console\CommandParameter;
 use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
@@ -11,11 +10,14 @@ use PhpRepos\Console\Input;
 use PhpRepos\Console\Signals\CommandExecutionCompleted;
 use PhpRepos\Console\Signals\RunningConsoleCommand;
 use PhpRepos\Console\Signals\ConsoleSessionStarted;
+use PhpRepos\Console\Infra\Path;
 use PhpRepos\Datatype\Map;
-use PhpRepos\FileManager\Path;
 use PhpRepos\Observer\Observer;
 use ReflectionException;
 use ReflectionParameter;
+use function PhpRepos\Console\Infra\CLI\error;
+use function PhpRepos\Console\Infra\CLI\line;
+use function PhpRepos\Console\Infra\CLI\write;
 use function PhpRepos\Console\Reflection\docblock_to_text;
 use function PhpRepos\Console\Reflection\function_parameters;
 use function PhpRepos\Datatype\Arr\any;
@@ -27,9 +29,9 @@ use function PhpRepos\Datatype\Str\after_first_occurrence;
 use function PhpRepos\Datatype\Str\concat;
 use function PhpRepos\Datatype\Str\first_line;
 use function PhpRepos\Datatype\Str\kebab_case;
+use function PhpRepos\Console\Infra\Filesystem\exists;
+use function PhpRepos\Console\Infra\Filesystem\ls_all_recursively;
 use function PhpRepos\Datatype\Str\prepend_when_exists;
-use function PhpRepos\FileManager\Directories\exists;
-use function PhpRepos\FileManager\Directories\ls_all_recursively;
 
 /**
  * Loads commands from the given commands path
@@ -82,11 +84,11 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
 
     if ($command_handlers->count() === 0) {
         if ($wants_help) {
-            Output\line($help_text);
+            line($help_text);
             return 0;
         }
 
-        Output\error("There is no command in $commands_directory path!");
+        error("There is no command in $commands_directory path!");
 
         return 1;
     }
@@ -105,8 +107,8 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
     $inputs = Input::make(array_slice($inputs->to_array(), $command_index + 1));
 
     if ($input_command === '') {
-        Output\line($help_text);
-        Output\write(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
+        line($help_text);
+        write(PHP_EOL . 'Here you can see a list of available commands:' . PHP_EOL);
 
         $commands = reduce($command_handlers, function ($commands, array $command_handler) {
             $commands[$command_handler['key']] = first_line(docblock_to_text($command_handler['value']));
@@ -117,8 +119,8 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
 
         foreach ($commands as $command => $description) {
             $description
-                ? Output\line('    ' . str_pad($command, $max_key_length + 4) . $description)
-                : Output\line("    $command");
+                ? line('    ' . str_pad($command, $max_key_length + 4) . $description)
+                : line("    $command");
         }
 
         return 0;
@@ -159,14 +161,14 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
     }, []);
 
     if (empty($command_handler)) {
-        Output\error("Command $input_command not found!");
+        error("Command $input_command not found!");
 
         return 1;
     }
 
     try {
         if ($wants_help) {
-            Output\line(command_help($entrypoint, $input_command, $command_handler['value']));
+            line(command_help($entrypoint, $input_command, $command_handler['value']));
             return 0;
         }
 
@@ -176,10 +178,10 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
         Observer\send(CommandExecutionCompleted::successfully($command_handler['key'], $return));
         return $return;
     } catch (InvalidCommandPromptException $exception) {
-        Output\error('Error: ' . $exception->getMessage());
-        Output\line(command_help($entrypoint, $input_command, $command_handler['value']));
+        error('Error: ' . $exception->getMessage());
+        line(command_help($entrypoint, $input_command, $command_handler['value']));
     } catch (InvalidCommandDefinitionException $exception) {
-        Output\error('Error: ' . $exception->getMessage());
+        error('Error: ' . $exception->getMessage());
     }
 
     return 1;

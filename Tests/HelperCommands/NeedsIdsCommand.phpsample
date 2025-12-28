@@ -2,7 +2,7 @@
 
 use PhpRepos\Console\Attributes\Description;
 use PhpRepos\Console\Attributes\LongOption;
-use function PhpRepos\Cli\Output\line;
+use function PhpRepos\Console\Infra\CLI\line;
 
 return function (
     #[LongOption('ids')]

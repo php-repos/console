@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 
+use PhpRepos\Console\Infra\Path;
 use PhpRepos\Console\Input;
-use PhpRepos\FileManager\Path;
+use function PhpRepos\Console\Infra\Filesystem\filename;
+use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\Console\Runner\from_path;
 use function PhpRepos\Console\Runner\run;
-use function PhpRepos\FileManager\Paths\filename;
-use function PhpRepos\FileManager\Paths\root;
 
 $entrypoint = filename($_SERVER['SCRIPT_FILENAME']);
 $help_text = <<<EOD

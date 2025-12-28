@@ -1,10 +1,10 @@
 <?php
 
-use PhpRepos\FileManager\Path;
-use function PhpRepos\FileManager\Directories\delete_recursive;
-use function PhpRepos\FileManager\Directories\ls_all_recursively;
-use function PhpRepos\FileManager\Directories\preserve_copy_recursively;
-use function PhpRepos\FileManager\Paths\realpath;
+use PhpRepos\Console\Infra\Path;
+use function PhpRepos\Console\Infra\Filesystem\delete_recursive;
+use function PhpRepos\Console\Infra\Filesystem\ls_all_recursively;
+use function PhpRepos\Console\Infra\Filesystem\preserve_copy_recursively;
+use function PhpRepos\Console\Infra\Filesystem\realpath;
 
 function copy_commands() {
     $helper_commands = realpath(__DIR__ . '/HelperCommands');

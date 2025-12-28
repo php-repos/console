@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "checksum": "97ef6fb60236ff3d09514bf464a2fce85316e53cc92c55c654c9d57b361ec254",
+    "checksum": "dfd6032c4a70056aa817c44aecd8e9467091ce6c339207adfdb33bd12d425a10",
     "packages": {
         "https:\/\/github.com\/php-repos\/datatype.git": {
             "owner": "php-repos",
@@ -8,20 +8,6 @@
             "version": "v4.1.0",
             "hash": "1ae490317fe131893d5175d3243ccbd5eba2f4c4",
             "checksum": "ec924a9e5b501439feb8e33bd88602db1c40100f9cbb763b306c89452d102cc8"
-        },
-        "https:\/\/github.com\/php-repos\/cli.git": {
-            "owner": "php-repos",
-            "repo": "cli",
-            "version": "v3.0.1",
-            "hash": "6073fb50f047f10129fc0926293d44f0c31b1d56",
-            "checksum": "a68495e306a5a44655efe65ac683517feed01c5e107aac560932b9f5b1a52545"
-        },
-        "https:\/\/github.com\/php-repos\/file-manager.git": {
-            "owner": "php-repos",
-            "repo": "file-manager",
-            "version": "v6.0.0",
-            "hash": "25242088549c5c8eaeeead8b5d3937f9fb8dd708",
-            "checksum": "231bdaf830d90172007378db88546e0ff3606f52d3c2a53376115c282316313a"
         },
         "https:\/\/github.com\/php-repos\/observer.git": {
             "owner": "php-repos",

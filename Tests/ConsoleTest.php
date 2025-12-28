@@ -1,9 +1,9 @@
 <?php
 
-use function PhpRepos\Cli\Output\assert_error;
-use function PhpRepos\Cli\Output\assert_line;
+use function PhpRepos\Console\Infra\CLI\assert_error;
+use function PhpRepos\Console\Infra\CLI\assert_line;
 use function PhpRepos\Datatype\Str\assert_equal;
-use function PhpRepos\FileManager\Paths\root;
+use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 

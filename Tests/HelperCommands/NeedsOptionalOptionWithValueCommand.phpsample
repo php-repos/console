@@ -1,7 +1,7 @@
 <?php
 
 use PhpRepos\Console\Attributes\LongOption;
-use function PhpRepos\Cli\Output\line;
+use function PhpRepos\Console\Infra\CLI\line;
 
 return function (
     #[LongOption('username')]
