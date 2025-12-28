@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use PhpRepos\Console\Input;
+use PhpRepos\Console\Solutions\Data\Input;
 use function PhpRepos\Console\Infra\Filesystem\filename;
 use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\Console\Runner\from_path;

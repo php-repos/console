@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console;
+namespace PhpRepos\Console\Solutions\Data;
 
 use PhpRepos\Console\Attributes\Argument;
 use PhpRepos\Console\Attributes\ExcessiveArguments;
@@ -9,9 +9,9 @@ use PhpRepos\Console\Attributes\Description;
 use PhpRepos\Console\Attributes\ShortOption;
 use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
 use ReflectionParameter;
-use function PhpRepos\Console\Reflection\attribute_property;
-use function PhpRepos\Console\Reflection\has_attribute;
-use function PhpRepos\Console\Reflection\is_builtin;
+use function PhpRepos\Console\Infra\Reflections\attribute_property;
+use function PhpRepos\Console\Infra\Reflections\has_attribute;
+use function PhpRepos\Console\Infra\Reflections\is_builtin;
 
 /**
  * Represents a parameter definition for a command.

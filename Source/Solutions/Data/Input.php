@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console;
+namespace PhpRepos\Console\Solutions\Data;
 
 use ArrayIterator;
 use IteratorAggregate;

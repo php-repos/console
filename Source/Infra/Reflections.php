@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console\Reflection;
+namespace PhpRepos\Console\Infra\Reflections;
 
 use Closure;
 use ReflectionException;

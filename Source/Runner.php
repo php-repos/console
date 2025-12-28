@@ -2,11 +2,11 @@
 
 namespace PhpRepos\Console\Runner;
 
-use PhpRepos\Console\CommandHandlers;
-use PhpRepos\Console\CommandParameter;
+use PhpRepos\Console\Solutions\Data\CommandHandlers;
+use PhpRepos\Console\Solutions\Data\CommandParameter;
 use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
 use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
-use PhpRepos\Console\Input;
+use PhpRepos\Console\Solutions\Data\Input;
 use PhpRepos\Console\Signals\CommandExecutionCompleted;
 use PhpRepos\Console\Signals\RunningConsoleCommand;
 use PhpRepos\Console\Signals\ConsoleSessionStarted;
@@ -16,8 +16,8 @@ use ReflectionParameter;
 use function PhpRepos\Console\Infra\CLI\error;
 use function PhpRepos\Console\Infra\CLI\line;
 use function PhpRepos\Console\Infra\CLI\write;
-use function PhpRepos\Console\Reflection\docblock_to_text;
-use function PhpRepos\Console\Reflection\function_parameters;
+use function PhpRepos\Console\Infra\Reflections\docblock_to_text;
+use function PhpRepos\Console\Infra\Reflections\function_parameters;
 use function PhpRepos\Console\Infra\Arrays\any;
 use function PhpRepos\Console\Infra\Arrays\filter;
 use function PhpRepos\Console\Infra\Arrays\map;
