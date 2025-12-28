@@ -105,7 +105,7 @@ class Input implements IteratorAggregate
 
     private function take_option_as_array(CommandParameter $parameter)
     {
-        return reduce($this->items, function ($options, $argument, $index) use ($parameter) {
+        $result = reduce($this->items, function ($options, $argument, $index) use ($parameter) {
             if (str_starts_with($argument, '-')) {
                 if (str_starts_with($argument, '--')) {
                     if (str_starts_with($argument, "--$parameter->long_option=")) {
@@ -119,7 +119,9 @@ class Input implements IteratorAggregate
             }
 
             return $options;
-        });
+        }, []);
+
+        return empty($result) ? null : $result;
     }
 
     private function last_option_index(CommandParameter $parameter): ?int
