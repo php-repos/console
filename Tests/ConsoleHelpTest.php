@@ -1,7 +1,7 @@
 <?php
 
 use function PhpRepos\Console\Infra\CLI\assert_error;
-use function PhpRepos\Datatype\Str\assert_equal;
+use function PhpRepos\Console\Infra\Strings\assert_equal;
 use function PhpRepos\TestRunner\Runner\test;
 
 include_once __DIR__ . '/Helper.php';

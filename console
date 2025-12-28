@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-use PhpRepos\Console\Infra\Path;
 use PhpRepos\Console\Input;
 use function PhpRepos\Console\Infra\Filesystem\filename;
 use function PhpRepos\Console\Infra\Filesystem\root;
@@ -23,7 +22,7 @@ $wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $co
 $offset = $wants_help ? 2  : 1;
 
 $inputs = Input::make(array_slice($argv, $offset));
-$commands_directory = Path::from(root())->sub('Commands');
+$commands_directory = root() . 'Commands';
 $command_handlers = from_path($commands_directory);
 
 exit(run($command_handlers, $inputs, $entrypoint, $help_text, $wants_help, $commands_directory));

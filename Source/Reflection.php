@@ -6,7 +6,7 @@ use Closure;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionParameter;
-use function PhpRepos\Datatype\Str\after_first_occurrence;
+use function PhpRepos\Console\Infra\Strings\after_first_occurrence;
 
 /**
  * Extract the description from a docblock comment.

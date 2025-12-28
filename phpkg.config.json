@@ -13,7 +13,6 @@
     "packages-directory": "Packages",
     "import-file": "phpkg.imports.php",
     "packages": {
-        "https:\/\/github.com\/php-repos\/datatype.git": "v4.1.0",
         "https:\/\/github.com\/php-repos\/observer.git": "v1.0.0"
     },
     "aliases": []

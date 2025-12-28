@@ -39,22 +39,22 @@ function error(string $string): void
  * Assert that the output line matches the expected value with default text color.
  *
  * @param string $expected The expected output line.
- * @param string $actual The actual output value.
+ * @param mixed $actual The actual output value.
  * @return bool Whether the assertion passed (true) or failed (false).
  */
-function assert_line(string $expected, string $actual): bool
+function assert_line(string $expected, mixed $actual): bool
 {
-    return $actual === "\e[39m$expected" . PHP_EOL;
+    return (string) $actual === "\e[39m$expected" . PHP_EOL;
 }
 
 /**
  * Assert that the error message matches the expected value with red text color.
  *
  * @param string $expected The expected error message.
- * @param string $actual The actual output value.
+ * @param mixed $actual The actual output value.
  * @return bool Whether the assertion passed (true) or failed (false).
  */
-function assert_error(string $expected, string $actual): bool
+function assert_error(string $expected, mixed $actual): bool
 {
-    return $actual === "\e[91m$expected\e[39m" . PHP_EOL;
+    return (string) $actual === "\e[91m$expected\e[39m" . PHP_EOL;
 }

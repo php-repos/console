@@ -1,6 +1,5 @@
 <?php
 
-use PhpRepos\Console\Infra\Path;
 use function PhpRepos\Console\Infra\Filesystem\delete_recursive;
 use function PhpRepos\Console\Infra\Filesystem\ls_all_recursively;
 use function PhpRepos\Console\Infra\Filesystem\preserve_copy_recursively;
@@ -18,6 +17,6 @@ function copy_commands() {
 }
 
 function delete_commands() {
-    $commands_directory = Path::from_string(__DIR__ . '/../Commands');
+    $commands_directory = realpath(__DIR__ . '/../Commands');
     delete_recursive($commands_directory);
 }

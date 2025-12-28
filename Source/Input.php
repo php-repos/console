@@ -2,15 +2,40 @@
 
 namespace PhpRepos\Console;
 
+use ArrayIterator;
+use IteratorAggregate;
 use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
-use PhpRepos\Datatype\Collection;
-use function PhpRepos\Datatype\Arr\first;
-use function PhpRepos\Datatype\Arr\first_key;
-use function PhpRepos\Datatype\Arr\last;
-use function PhpRepos\Datatype\Arr\reduce;
+use Traversable;
+use function PhpRepos\Console\Infra\Arrays\first;
+use function PhpRepos\Console\Infra\Arrays\first_key;
+use function PhpRepos\Console\Infra\Arrays\last;
+use function PhpRepos\Console\Infra\Arrays\reduce;
 
-class Input extends Collection
+class Input implements IteratorAggregate
 {
+    protected array $items;
+
+    public function __construct(array $items = [])
+    {
+        $this->items = $items;
+    }
+
+    public static function make(array $items): static
+    {
+        return new static($items);
+    }
+
+    public function to_array(): array
+    {
+        return $this->items;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->items);
+    }
+
+
     /**
      * Take an argument based on the specified parameter definition.
      *

@@ -2,19 +2,19 @@
     "version": 2,
     "checksum": "dfd6032c4a70056aa817c44aecd8e9467091ce6c339207adfdb33bd12d425a10",
     "packages": {
-        "https:\/\/github.com\/php-repos\/datatype.git": {
-            "owner": "php-repos",
-            "repo": "datatype",
-            "version": "v4.1.0",
-            "hash": "1ae490317fe131893d5175d3243ccbd5eba2f4c4",
-            "checksum": "ec924a9e5b501439feb8e33bd88602db1c40100f9cbb763b306c89452d102cc8"
-        },
         "https:\/\/github.com\/php-repos\/observer.git": {
             "owner": "php-repos",
             "repo": "observer",
             "version": "v1.0.0",
             "hash": "f38e79b372ec80beb12d24f7d77e5e8083e5952c",
             "checksum": "a7955499a706e478ee0fcbe5189959e69024f7a4c0ba8b465cce93a5089fb263"
+        },
+        "https:\/\/github.com\/php-repos\/datatype.git": {
+            "owner": "php-repos",
+            "repo": "datatype",
+            "version": "v4.1.0",
+            "hash": "1ae490317fe131893d5175d3243ccbd5eba2f4c4",
+            "checksum": "ec924a9e5b501439feb8e33bd88602db1c40100f9cbb763b306c89452d102cc8"
         },
         "https:\/\/github.com\/ramsey\/uuid.git": {
             "owner": "ramsey",
