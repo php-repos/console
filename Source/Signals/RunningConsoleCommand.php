@@ -2,7 +2,7 @@
 
 namespace PhpRepos\Console\Signals;
 
-use PhpRepos\Observer\Signals\Plan;
+use PhpRepos\Observer\API\Plan;
 
 class RunningConsoleCommand extends Plan
 {

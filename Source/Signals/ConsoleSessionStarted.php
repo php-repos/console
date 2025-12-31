@@ -2,7 +2,7 @@
 
 namespace PhpRepos\Console\Signals;
 
-use PhpRepos\Observer\Signals\Event;
+use PhpRepos\Observer\API\Event;
 
 class ConsoleSessionStarted extends Event
 {

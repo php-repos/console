@@ -10,7 +10,7 @@ use PhpRepos\Console\Solutions\Data\Input;
 use PhpRepos\Console\Signals\CommandExecutionCompleted;
 use PhpRepos\Console\Signals\RunningConsoleCommand;
 use PhpRepos\Console\Signals\ConsoleSessionStarted;
-use PhpRepos\Observer\Observer;
+use PhpRepos\Observer\API\Bus;
 use ReflectionException;
 use ReflectionParameter;
 use function PhpRepos\Console\Infra\CLI\error;
@@ -78,7 +78,7 @@ function from_path(string $root, string $commands_file_suffix = 'Command.php'): 
  */
 function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoint, string $help_text, bool $wants_help, string $commands_directory): int
 {
-    Observer\send(ConsoleSessionStarted::by($inputs->to_array()));
+    Bus\send(ConsoleSessionStarted::by($inputs->to_array()));
 
     if ($command_handlers->count() === 0) {
         if ($wants_help) {
@@ -170,10 +170,10 @@ function run(CommandHandlers $command_handlers, Input $inputs, string $entrypoin
             return 0;
         }
 
-        Observer\send(RunningConsoleCommand::command($command_handler['key']));
+        Bus\send(RunningConsoleCommand::command($command_handler['key']));
         $return = execute($command_handler['value'], $inputs);
         $return = $return !== null ? $return : 0;
-        Observer\send(CommandExecutionCompleted::successfully($command_handler['key'], $return));
+        Bus\send(CommandExecutionCompleted::successfully($command_handler['key'], $return));
         return $return;
     } catch (InvalidCommandPromptException $exception) {
         error('Error: ' . $exception->getMessage());
