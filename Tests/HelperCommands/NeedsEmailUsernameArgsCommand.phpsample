@@ -1,8 +1,8 @@
 <?php
 
-use PhpRepos\Console\Attributes\Argument;
-use PhpRepos\Console\Attributes\Description;
-use function PhpRepos\Cli\Output\line;
+use PhpRepos\Console\Business\Attributes\Argument;
+use PhpRepos\Console\Business\Attributes\Description;
+use function PhpRepos\Console\Infra\CLI\line;
 
 return function (
     #[Argument]

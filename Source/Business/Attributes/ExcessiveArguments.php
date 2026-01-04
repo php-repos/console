@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console\Attributes;
+namespace PhpRepos\Console\Business\Attributes;
 
 use Attribute;
 
@@ -9,7 +9,7 @@ use Attribute;
  *
  * This attribute is used to define a variable as the variable to pass any excessive arguments
  * passed to the command.
- * Note: The correspond variable must always be an array.
+ * Note: The corresponding variable must always be an array.
  *
  * Usage example:
  * ```

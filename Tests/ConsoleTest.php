@@ -1,9 +1,9 @@
 <?php
 
-use function PhpRepos\Cli\Output\assert_error;
-use function PhpRepos\Cli\Output\assert_line;
-use function PhpRepos\Datatype\Str\assert_equal;
-use function PhpRepos\FileManager\Paths\root;
+use function PhpRepos\Console\Infra\CLI\assert_error;
+use function PhpRepos\Console\Infra\CLI\assert_line;
+use function PhpRepos\Console\Infra\Strings\assert_equal;
+use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
 
@@ -58,36 +58,37 @@ test(
     case: function () {
         $output = run('');
         $expected = <<<EOD
-\e[39mUsage: console [-h | --help]
+\e[91mNo command specified!\e[39m
+Usage: console [-h | --help]
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
-\e[39m    accept-excessive-arguments
-\e[39m    default-bool-argument
-\e[39m    default-string-argument
-\e[39m    first
-\e[39m    full-fledged                        This is the full-fledged command
-\e[39m    invalid
-\e[39m    invalid-object
-\e[39m    needs-array-argument
-\e[39m    needs-bool-argument
-\e[39m    needs-email
-\e[39m    needs-email-username-args
-\e[39m    needs-force-option
-\e[39m    needs-ids
-\e[39m    needs-list
-\e[39m    needs-optional-argument
-\e[39m    needs-optional-force-option
-\e[39m    needs-optional-list
-\e[39m    needs-optional-option-with-value
-\e[39m    needs-optional-team
-\e[39m    needs-optional-username
-\e[39m    needs-two-options
-\e[39m    needs-username
-\e[39m    no-type
-\e[39m    second                              This is a description
-\e[39m    subdirectory first
-\e[39m    supports-help
+    accept-excessive-arguments
+    default-bool-argument
+    default-string-argument
+    first
+    full-fledged                        This is the full-fledged command
+    invalid
+    invalid-object
+    needs-array-argument
+    needs-bool-argument
+    needs-email
+    needs-email-username-args
+    needs-force-option
+    needs-ids
+    needs-list
+    needs-optional-argument
+    needs-optional-force-option
+    needs-optional-list
+    needs-optional-option-with-value
+    needs-optional-team
+    needs-optional-username
+    needs-two-options
+    needs-username
+    no-type
+    second                              This is a description
+    subdirectory first
+    supports-help
 
 EOD;
 
@@ -202,7 +203,7 @@ test(
         $output = run('needs-email');
         $expected = <<<EOD
 \e[91mError: Option `email` is required.\e[39m
-\e[39mUsage: console needs-email [<options>]
+Usage: console needs-email [<options>]
 
 Description:
 No description provided for the command.
@@ -378,7 +379,7 @@ test(
         $output = run('needs-force-option -f --force=false');
         $expected = <<<EOD
 \e[91mError: Long option `force` must be boolean and does not accept values.\e[39m
-\e[39mUsage: console needs-force-option [<options>]
+Usage: console needs-force-option [<options>]
 
 Description:
 No description provided for the command.
@@ -396,7 +397,7 @@ EOD;
         $output = run('needs-force-option -f=any-value');
         $expected = <<<EOD
 \e[91mError: Short option `f` must be boolean and does not accept values.\e[39m
-\e[39mUsage: console needs-force-option [<options>]
+Usage: console needs-force-option [<options>]
 
 Description:
 No description provided for the command.
@@ -470,7 +471,7 @@ test(
         $output = run('needs-ids');
         $expected = <<<EOD
 \e[91mError: Option `ids` is required.\e[39m
-\e[39mUsage: console needs-ids [<options>]
+Usage: console needs-ids [<options>]
 
 Description:
 No description provided for the command.
@@ -500,7 +501,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: Option `l|list` is required.\e[39m
-\e[39mUsage: console needs-list [<options>]
+Usage: console needs-list [<options>]
 
 Description:
 No description provided for the command.
@@ -605,7 +606,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: Option needs value.\e[39m
-\e[39mUsage: console needs-username [<options>]
+Usage: console needs-username [<options>]
 
 Description:
 No description provided for the command.
@@ -635,7 +636,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: Option needs value.\e[39m
-\e[39mUsage: console needs-username [<options>]
+Usage: console needs-username [<options>]
 
 Description:
 No description provided for the command.
@@ -663,7 +664,7 @@ test(
     case: function () {
         $expected = <<<EOD
 \e[91mError: Option needs value.\e[39m
-\e[39mUsage: console needs-username [<options>]
+Usage: console needs-username [<options>]
 
 Description:
 No description provided for the command.
@@ -697,7 +698,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: You passed invalid argument to the command.\e[39m
-\e[39mUsage: console needs-email [<options>]
+Usage: console needs-email [<options>]
 
 Description:
 No description provided for the command.
@@ -757,7 +758,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: You passed invalid argument to the command.\e[39m
-\e[39mUsage: console needs-email-username-args <email> <username>
+Usage: console needs-email-username-args <email> <username>
 
 Description:
 No description provided for the command.
@@ -808,7 +809,7 @@ test(
         $output = run('needs-bool-argument any-value');
         $expected = <<<EOD
 \e[91mError: Bool argument accepts true or false.\e[39m
-\e[39mUsage: console needs-bool-argument <force>
+Usage: console needs-bool-argument <force>
 
 Description:
 No description provided for the command.
@@ -868,7 +869,7 @@ test(
 
         $expected = <<<EOD
 \e[91mError: Argument `email` is required.\e[39m
-\e[39mUsage: console needs-email-username-args <email> <username>
+Usage: console needs-email-username-args <email> <username>
 
 Description:
 No description provided for the command.

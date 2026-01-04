@@ -1,17 +1,15 @@
 <?php
 
-namespace PhpRepos\Console;
+namespace PhpRepos\Console\Solution\Data;
 
-use PhpRepos\Console\Attributes\Argument;
-use PhpRepos\Console\Attributes\ExcessiveArguments;
-use PhpRepos\Console\Attributes\LongOption;
-use PhpRepos\Console\Attributes\Description;
-use PhpRepos\Console\Attributes\ShortOption;
-use PhpRepos\Console\Exceptions\InvalidCommandDefinitionException;
+use PhpRepos\Console\Business\Attributes\Argument;
+use PhpRepos\Console\Business\Attributes\ExcessiveArguments;
+use PhpRepos\Console\Business\Attributes\LongOption;
+use PhpRepos\Console\Business\Attributes\Description;
+use PhpRepos\Console\Business\Attributes\ShortOption;
+use PhpRepos\Console\Infra\Reflections;
+use PhpRepos\Console\Solution\Exceptions\InvalidCommandDefinitionException;
 use ReflectionParameter;
-use function PhpRepos\Console\Reflection\attribute_property;
-use function PhpRepos\Console\Reflection\has_attribute;
-use function PhpRepos\Console\Reflection\is_builtin;
 
 /**
  * Represents a parameter definition for a command.
@@ -67,14 +65,14 @@ class CommandParameter
         if (is_null($param->getType())) {
             throw new InvalidCommandDefinitionException('Command\'s parameter must have type.');
         }
-        if (! is_builtin($param)) {
+        if (! Reflections\is_builtin($param)) {
             throw new InvalidCommandDefinitionException('Command options must be builtin type (bool, string, int, array).');
         }
 
-        $short_option = attribute_property($param, ShortOption::class, 'option');
-        $long_option = attribute_property($param, LongOption::class, 'option');
-        $accepts_argument = has_attribute($param, Argument::class);
-        $wants_excessive_arguments = has_attribute($param, ExcessiveArguments::class);
+        $short_option = Reflections\attribute_property($param, ShortOption::class, 'option');
+        $long_option = Reflections\attribute_property($param, LongOption::class, 'option');
+        $accepts_argument = Reflections\has_attribute($param, Argument::class);
+        $wants_excessive_arguments = Reflections\has_attribute($param, ExcessiveArguments::class);
 
         if (! $short_option && ! $long_option && ! $accepts_argument && ! $wants_excessive_arguments) {
             throw new InvalidCommandDefinitionException('No option or argument has been defined.');
@@ -90,7 +88,7 @@ class CommandParameter
             wants_excessive_arguments: $wants_excessive_arguments,
             short_option: $short_option,
             long_option: $long_option,
-            description: attribute_property($param, Description::class, 'description'),
+            description: Reflections\attribute_property($param, Description::class, 'description'),
             default_value: $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null,
         );
     }

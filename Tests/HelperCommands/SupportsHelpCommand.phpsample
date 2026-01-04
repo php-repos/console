@@ -1,8 +1,8 @@
 <?php
 
-use PhpRepos\Console\Attributes\LongOption;
-use PhpRepos\Console\Attributes\ShortOption;
-use function PhpRepos\Cli\Output\line;
+use PhpRepos\Console\Business\Attributes\LongOption;
+use PhpRepos\Console\Business\Attributes\ShortOption;
+use function PhpRepos\Console\Infra\CLI\line;
 
 return function (
     #[ShortOption('h')]

@@ -1,7 +1,8 @@
 <?php
 
-use function PhpRepos\Cli\Output\assert_error;
-use function PhpRepos\Datatype\Str\assert_equal;
+use function PhpRepos\Console\Infra\CLI\assert_error;
+use function PhpRepos\Console\Infra\Filesystem\root;
+use function PhpRepos\Console\Infra\Strings\assert_equal;
 use function PhpRepos\TestRunner\Runner\test;
 
 include_once __DIR__ . '/Helper.php';
@@ -13,55 +14,40 @@ function help(string $prompt): string
 }
 
 test(
-    title: 'it should show console help when there is no command on the given directory',
-    case: function () {
-        $output = shell_exec('php ./console -h');
-
-        $help_expected_output = <<<EOD
-\e[39mUsage: console [-h | --help]
-               <command> [<options>] [<args>]
-
-EOD;
-
-        assert_equal($output, $help_expected_output);
-    }
-);
-
-test(
     title: 'it should show the help when -h option passed',
     case: function () {
         $output = shell_exec('php ./console -h');
         $expected = <<<EOD
-\e[39mUsage: console [-h | --help]
+Usage: console [-h | --help]
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
-\e[39m    accept-excessive-arguments
-\e[39m    default-bool-argument
-\e[39m    default-string-argument
-\e[39m    first
-\e[39m    full-fledged                        This is the full-fledged command
-\e[39m    invalid
-\e[39m    invalid-object
-\e[39m    needs-array-argument
-\e[39m    needs-bool-argument
-\e[39m    needs-email
-\e[39m    needs-email-username-args
-\e[39m    needs-force-option
-\e[39m    needs-ids
-\e[39m    needs-list
-\e[39m    needs-optional-argument
-\e[39m    needs-optional-force-option
-\e[39m    needs-optional-list
-\e[39m    needs-optional-option-with-value
-\e[39m    needs-optional-team
-\e[39m    needs-optional-username
-\e[39m    needs-two-options
-\e[39m    needs-username
-\e[39m    no-type
-\e[39m    second                              This is a description
-\e[39m    subdirectory first
-\e[39m    supports-help
+    accept-excessive-arguments
+    default-bool-argument
+    default-string-argument
+    first
+    full-fledged                        This is the full-fledged command
+    invalid
+    invalid-object
+    needs-array-argument
+    needs-bool-argument
+    needs-email
+    needs-email-username-args
+    needs-force-option
+    needs-ids
+    needs-list
+    needs-optional-argument
+    needs-optional-force-option
+    needs-optional-list
+    needs-optional-option-with-value
+    needs-optional-team
+    needs-optional-username
+    needs-two-options
+    needs-username
+    no-type
+    second                              This is a description
+    subdirectory first
+    supports-help
 
 EOD;
         assert_equal($output, $expected);
@@ -79,36 +65,36 @@ test(
     case: function () {
         $output = shell_exec('php ./console --help');
         $expected = <<<EOD
-\e[39mUsage: console [-h | --help]
+Usage: console [-h | --help]
                <command> [<options>] [<args>]
 
 Here you can see a list of available commands:
-\e[39m    accept-excessive-arguments
-\e[39m    default-bool-argument
-\e[39m    default-string-argument
-\e[39m    first
-\e[39m    full-fledged                        This is the full-fledged command
-\e[39m    invalid
-\e[39m    invalid-object
-\e[39m    needs-array-argument
-\e[39m    needs-bool-argument
-\e[39m    needs-email
-\e[39m    needs-email-username-args
-\e[39m    needs-force-option
-\e[39m    needs-ids
-\e[39m    needs-list
-\e[39m    needs-optional-argument
-\e[39m    needs-optional-force-option
-\e[39m    needs-optional-list
-\e[39m    needs-optional-option-with-value
-\e[39m    needs-optional-team
-\e[39m    needs-optional-username
-\e[39m    needs-two-options
-\e[39m    needs-username
-\e[39m    no-type
-\e[39m    second                              This is a description
-\e[39m    subdirectory first
-\e[39m    supports-help
+    accept-excessive-arguments
+    default-bool-argument
+    default-string-argument
+    first
+    full-fledged                        This is the full-fledged command
+    invalid
+    invalid-object
+    needs-array-argument
+    needs-bool-argument
+    needs-email
+    needs-email-username-args
+    needs-force-option
+    needs-ids
+    needs-list
+    needs-optional-argument
+    needs-optional-force-option
+    needs-optional-list
+    needs-optional-option-with-value
+    needs-optional-team
+    needs-optional-username
+    needs-two-options
+    needs-username
+    no-type
+    second                              This is a description
+    subdirectory first
+    supports-help
 
 EOD;
 
@@ -142,7 +128,7 @@ test(
     case: function () {
         $output = help('first');
         $expected = <<<EOD
-\e[39mUsage: console first
+Usage: console first
 
 Description:
 No description provided for the command.
@@ -170,7 +156,7 @@ test(
     case: function () {
         $output = help('second');
         $expected = <<<EOD
-\e[39mUsage: console second
+Usage: console second
 
 Description:
  This is a description
@@ -200,7 +186,7 @@ test(
     case: function () {
         $output = help('needs-email');
         $expected = <<<EOD
-\e[39mUsage: console needs-email [<options>]
+Usage: console needs-email [<options>]
 
 Description:
 No description provided for the command.
@@ -228,7 +214,7 @@ test(
     case: function () {
         $output = help('needs-username');
         $expected = <<<EOD
-\e[39mUsage: console needs-username [<options>]
+Usage: console needs-username [<options>]
 
 Description:
 No description provided for the command.
@@ -256,7 +242,7 @@ test(
     case: function () {
         $output = help('needs-optional-username');
         $expected = <<<EOD
-\e[39mUsage: console needs-optional-username [<options>]
+Usage: console needs-optional-username [<options>]
 
 Description:
 No description provided for the command.
@@ -284,7 +270,7 @@ test(
     case: function () {
         $output = help('needs-optional-team');
         $expected = <<<EOD
-\e[39mUsage: console needs-optional-team [<options>]
+Usage: console needs-optional-team [<options>]
 
 Description:
 No description provided for the command.
@@ -312,7 +298,7 @@ test(
     case: function () {
         $output = help('needs-force-option');
         $expected = <<<EOD
-\e[39mUsage: console needs-force-option [<options>]
+Usage: console needs-force-option [<options>]
 
 Description:
 No description provided for the command.
@@ -340,7 +326,7 @@ test(
     case: function () {
         $output = help('needs-ids');
         $expected = <<<EOD
-\e[39mUsage: console needs-ids [<options>]
+Usage: console needs-ids [<options>]
 
 Description:
 No description provided for the command.
@@ -368,7 +354,7 @@ test(
     case: function () {
         $output = help('needs-email-username-args');
         $expected = <<<EOD
-\e[39mUsage: console needs-email-username-args <email> <username>
+Usage: console needs-email-username-args <email> <username>
 
 Description:
 No description provided for the command.
@@ -442,7 +428,7 @@ test(
     case: function () {
         $output = help('needs-optional-argument');
         $expected = <<<EOD
-\e[39mUsage: console needs-optional-argument [<name>]
+Usage: console needs-optional-argument [<name>]
 
 Description:
 No description provided for the command.
@@ -470,7 +456,7 @@ test(
     case: function () {
         $output = help('full-fledged');
         $expected = <<<EOD
-\e[39mUsage: console full-fledged [<options>] [<password>] [<roles>]
+Usage: console full-fledged [<options>] [<password>] [<roles>]
 
 Description:
  This is the full-fledged command
@@ -504,7 +490,7 @@ test(
     case: function () {
         $output = help('needs-bool-argument');
         $expected = <<<EOD
-\e[39mUsage: console needs-bool-argument <force>
+Usage: console needs-bool-argument <force>
 
 Description:
 No description provided for the command.
@@ -532,7 +518,7 @@ test(
     case: function () {
         $output = help('accept-excessive-arguments');
         $expected = <<<EOD
-\e[39mUsage: console accept-excessive-arguments [<options>]
+Usage: console accept-excessive-arguments [<options>]
 
 Description:
 No description provided for the command.

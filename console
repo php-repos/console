@@ -1,29 +1,51 @@
 #!/usr/bin/env php
 <?php
 
-use PhpRepos\Console\Input;
-use PhpRepos\FileManager\Path;
-use function PhpRepos\Console\Runner\from_path;
-use function PhpRepos\Console\Runner\run;
-use function PhpRepos\FileManager\Paths\filename;
-use function PhpRepos\FileManager\Paths\root;
-
-$entrypoint = filename($_SERVER['SCRIPT_FILENAME']);
-$help_text = <<<EOD
-Usage: $entrypoint [-h | --help]
-               <command> [<options>] [<args>]
-EOD;
+use PhpRepos\Console\Business\Finder;
+use PhpRepos\Console\Business\Command;
+use PhpRepos\Console\UI;
+use PhpRepos\Console\Infra\CLI;
 
 global $argv;
 
-$help_options = getopt('h', ['help'], $command_index);
-// Only care about the first help
-$wants_help = (isset($help_options['h']) || isset($help_options['help'])) && $command_index === 2;
+$entrypoint = 'console';
+$short_options = 'h';
+$long_options = ['help'];
+$options = getopt($short_options, $long_options, $offset);
+$wants_help = isset($options['h']) || isset($options['help']);
+$inputs = array_slice($argv, $offset);
 
-$offset = $wants_help ? 2  : 1;
+$outcome = Finder\path('Commands', 'Command.php');
 
-$inputs = Input::make(array_slice($argv, $offset));
-$commands_directory = Path::from(root())->sub('Commands');
-$command_handlers = from_path($commands_directory);
+if (!$outcome->success) CLI\error($outcome->message) && exit(1);
 
-exit(run($command_handlers, $inputs, $entrypoint, $help_text, $wants_help, $commands_directory));
+$command_handlers = $outcome->data['handlers'];
+
+$outcome = Command\find($command_handlers, $inputs);
+
+if (!$outcome->success) {
+    if (!$wants_help) CLI\error($outcome->message);
+
+    $outcome = Command\all($command_handlers);
+    CLI\write(UI\short_help($outcome->data['commands'], $entrypoint)) && exit($wants_help ? 0 : 1);
+}
+
+$command = $outcome->data['name'];
+$handler = $outcome->data['handler'];
+
+$outcome = Command\describe($handler);
+if (!$outcome->success) CLI\error($outcome->message) && exit(1);
+
+$description = $outcome->data;
+
+if ($wants_help)
+    CLI\write(UI\long_help($description, $entrypoint, $command)) && exit(0);
+
+$outcome = Command\run($command, $handler, $command_handlers, $inputs);
+
+if (!$outcome->success)
+    CLI\error($outcome->message)
+        && CLI\write(UI\long_help($description, $entrypoint, $command))
+        && exit($outcome->data['exit_code'] ?? 1);
+
+exit($outcome->data['exit_code'] ?? 0);

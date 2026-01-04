@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console\Attributes;
+namespace PhpRepos\Console\Business\Attributes;
 
 use Attribute;
 

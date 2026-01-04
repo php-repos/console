@@ -1,16 +1,38 @@
 <?php
 
-namespace PhpRepos\Console;
+namespace PhpRepos\Console\Solution\Data;
 
-use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
-use PhpRepos\Datatype\Collection;
-use function PhpRepos\Datatype\Arr\first;
-use function PhpRepos\Datatype\Arr\first_key;
-use function PhpRepos\Datatype\Arr\last;
-use function PhpRepos\Datatype\Arr\reduce;
+use ArrayIterator;
+use IteratorAggregate;
+use PhpRepos\Console\Infra\Arrays;
+use PhpRepos\Console\Solution\Exceptions\InvalidCommandPromptException;
+use Traversable;
 
-class Input extends Collection
+class Input implements IteratorAggregate
 {
+    protected array $items;
+
+    public function __construct(array $items = [])
+    {
+        $this->items = $items;
+    }
+
+    public static function make(array $items): static
+    {
+        return new static($items);
+    }
+
+    public function to_array(): array
+    {
+        return $this->items;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->items);
+    }
+
+
     /**
      * Take an argument based on the specified parameter definition.
      *
@@ -80,7 +102,7 @@ class Input extends Collection
 
     private function take_option_as_array(CommandParameter $parameter)
     {
-        return reduce($this->items, function ($options, $argument, $index) use ($parameter) {
+        $result = Arrays\reduce($this->items, function ($options, $argument, $index) use ($parameter) {
             if (str_starts_with($argument, '-')) {
                 if (str_starts_with($argument, '--')) {
                     if (str_starts_with($argument, "--$parameter->long_option=")) {
@@ -94,14 +116,16 @@ class Input extends Collection
             }
 
             return $options;
-        });
+        }, []);
+
+        return empty($result) ? null : $result;
     }
 
     private function last_option_index(CommandParameter $parameter): ?int
     {
         $option_indexes = $this->option_indexes($parameter);
 
-        return empty($option_indexes) ? null : last($option_indexes);
+        return empty($option_indexes) ? null : Arrays\last($option_indexes);
     }
 
     private function take_option_as_bool(CommandParameter $parameter): ?bool
@@ -171,7 +195,7 @@ class Input extends Collection
 
     private function option_indexes(CommandParameter $parameter): array
     {
-        return reduce($this->items, function ($option_indexes, $argument, $index) use ($parameter) {
+        return Arrays\reduce($this->items, function ($option_indexes, $argument, $index) use ($parameter) {
             if (
                 $parameter->long_option && (
                     str_starts_with($argument, "--$parameter->long_option=")
@@ -207,8 +231,8 @@ class Input extends Collection
             return null;
         }
 
-        $value = first($this->items);
-        $this->use(first_key($this->items));
+        $value = Arrays\first($this->items);
+        $this->use(Arrays\first_key($this->items));
 
         return $value;
     }

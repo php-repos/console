@@ -10,18 +10,11 @@
     "executables": {
         "console": "console"
     },
-    "import-file": "phpkg.imports.php",
     "packages-directory": "Packages",
+    "import-file": "phpkg.imports.php",
     "packages": {
-        "https:\/\/github.com\/php-repos\/cli.git": "v3.0.1",
-        "https:\/\/github.com\/php-repos\/datatype.git": "v4.1.0",
-        "https:\/\/github.com\/php-repos\/file-manager.git": "v6.0.0",
-        "https:\/\/github.com\/php-repos\/observer.git": "v1.0.0"
+        "https:\/\/github.com\/php-repos\/observer.git": "v2.0.0",
+        "https:\/\/github.com\/php-repos\/logger.git": "v2.0.1"
     },
-    "aliases": {
-        "observer": "https:\/\/github.com\/php-repos\/observer.git",
-        "file-manager": "https:\/\/github.com\/php-repos\/file-manager.git",
-        "datatype": "https:\/\/github.com\/php-repos\/datatype.git",
-        "cli": "https:\/\/github.com\/php-repos\/cli.git"
-    }
+    "aliases": []
 }
