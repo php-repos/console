@@ -1,6 +1,6 @@
 <?php
 
-use PhpRepos\Console\Attributes\LongOption;
+use PhpRepos\Console\Business\Attributes\LongOption;
 use function PhpRepos\Console\Infra\CLI\line;
 
 return function (

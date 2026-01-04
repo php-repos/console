@@ -153,3 +153,15 @@ function last(iterable $array, ?callable $condition = null): mixed
     $array = to_array($array);
     return !empty($array) ? end($array) : null;
 }
+
+/**
+ * Sorts an array and returns it.
+ *
+ * @param array $array The array to sort.
+ * @return array The sorted array.
+ */
+function sort(array $array): array
+{
+    \sort($array);
+    return $array;
+}

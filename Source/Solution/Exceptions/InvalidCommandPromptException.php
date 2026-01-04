@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpRepos\Console\Exceptions;
+namespace PhpRepos\Console\Solution\Exceptions;
 
 use InvalidArgumentException;
 

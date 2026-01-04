@@ -1,15 +1,12 @@
 <?php
 
-namespace PhpRepos\Console\Solutions\Data;
+namespace PhpRepos\Console\Solution\Data;
 
 use ArrayIterator;
 use IteratorAggregate;
-use PhpRepos\Console\Exceptions\InvalidCommandPromptException;
+use PhpRepos\Console\Infra\Arrays;
+use PhpRepos\Console\Solution\Exceptions\InvalidCommandPromptException;
 use Traversable;
-use function PhpRepos\Console\Infra\Arrays\first;
-use function PhpRepos\Console\Infra\Arrays\first_key;
-use function PhpRepos\Console\Infra\Arrays\last;
-use function PhpRepos\Console\Infra\Arrays\reduce;
 
 class Input implements IteratorAggregate
 {
@@ -105,7 +102,7 @@ class Input implements IteratorAggregate
 
     private function take_option_as_array(CommandParameter $parameter)
     {
-        $result = reduce($this->items, function ($options, $argument, $index) use ($parameter) {
+        $result = Arrays\reduce($this->items, function ($options, $argument, $index) use ($parameter) {
             if (str_starts_with($argument, '-')) {
                 if (str_starts_with($argument, '--')) {
                     if (str_starts_with($argument, "--$parameter->long_option=")) {
@@ -128,7 +125,7 @@ class Input implements IteratorAggregate
     {
         $option_indexes = $this->option_indexes($parameter);
 
-        return empty($option_indexes) ? null : last($option_indexes);
+        return empty($option_indexes) ? null : Arrays\last($option_indexes);
     }
 
     private function take_option_as_bool(CommandParameter $parameter): ?bool
@@ -198,7 +195,7 @@ class Input implements IteratorAggregate
 
     private function option_indexes(CommandParameter $parameter): array
     {
-        return reduce($this->items, function ($option_indexes, $argument, $index) use ($parameter) {
+        return Arrays\reduce($this->items, function ($option_indexes, $argument, $index) use ($parameter) {
             if (
                 $parameter->long_option && (
                     str_starts_with($argument, "--$parameter->long_option=")
@@ -234,8 +231,8 @@ class Input implements IteratorAggregate
             return null;
         }
 
-        $value = first($this->items);
-        $this->use(first_key($this->items));
+        $value = Arrays\first($this->items);
+        $this->use(Arrays\first_key($this->items));
 
         return $value;
     }

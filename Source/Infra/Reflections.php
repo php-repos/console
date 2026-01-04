@@ -6,7 +6,7 @@ use Closure;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionParameter;
-use function PhpRepos\Console\Infra\Strings\after_first_occurrence;
+use PhpRepos\Console\Infra\Strings;
 
 /**
  * Extract the description from a docblock comment.
@@ -32,7 +32,7 @@ function docblock_to_text(Closure $function): string
 
     // Trim " *" from the beginning of each line
     $processed_lines = array_map(function($line) {
-        return after_first_occurrence($line, '*');
+        return Strings\after_first_occurrence($line, '*');
     }, $lines);
 
     // Join the processed lines back into a single string

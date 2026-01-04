@@ -30,17 +30,6 @@ function realpath(string $path_string): string
 }
 
 /**
- * Extracts the filename from a path.
- *
- * @param string $path The path to extract the filename from.
- * @return string The filename.
- */
-function filename(string $path): string
-{
-    return basename($path);
-}
-
-/**
  * Checks if a directory exists.
  *
  * @param string $path The path to check.

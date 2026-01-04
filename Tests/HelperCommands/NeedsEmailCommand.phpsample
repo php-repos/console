@@ -1,7 +1,7 @@
 <?php
 
-use PhpRepos\Console\Attributes\Description;
-use PhpRepos\Console\Attributes\LongOption;
+use PhpRepos\Console\Business\Attributes\Description;
+use PhpRepos\Console\Business\Attributes\LongOption;
 use function PhpRepos\Console\Infra\CLI\line;
 
 return function (

@@ -6,33 +6,34 @@ namespace PhpRepos\Console\Infra\CLI;
  * Write a message to the console.
  *
  * @param string $message The message to be displayed.
- * @return void
+ * @return bool
  */
-function write(string $message): void
+function write(string $message): bool
 {
     echo $message;
+    return true;
 }
 
 /**
  * Output a line of text to the console with default text color.
  *
  * @param string $string The text to be displayed.
- * @return void
+ * @return bool
  */
-function line(string $string): void
+function line(string $string): bool
 {
-    write("\e[39m$string" . PHP_EOL);
+    return write("\e[39m$string" . PHP_EOL);
 }
 
 /**
  * Output an error message to the console with red text color.
  *
  * @param string $string The error message to be displayed.
- * @return void
+ * @return bool
  */
-function error(string $string): void
+function error(string $string): bool
 {
-    write("\e[91m$string\e[39m" . PHP_EOL);
+    return write("\e[91m$string\e[39m" . PHP_EOL);
 }
 
 /**
