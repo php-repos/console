@@ -12,22 +12,20 @@ use function PhpRepos\Observer\API\Signals\plan;
 use function PhpRepos\Observer\API\Signals\event;
 
 /**
- * Discover commands from a relative path.
+ * Discover commands from a directory path.
  *
- * Business specification: Find all command handlers in a directory relative to project root.
+ * Business specification: Find all command handlers in a directory.
  *
- * @param string $relative_path Relative path from project root
+ * @param string $root Full path to commands directory
  * @param string $commands_file_suffix File suffix (default: 'Command.php')
  * @return Outcome
  *   - success: true, data['handlers' => array of command handlers]
  *   - failure: false, message => error description
  */
-function path(string $relative_path, string $commands_file_suffix): Outcome
+function path(string $root, string $commands_file_suffix): Outcome
 {
     try {
-        propose(plan('Finding commands from path.', ['relative_path' => $relative_path]));
-
-        $root = Paths\under_root($relative_path);
+        propose(plan('Finding commands from path.', ['root' => $root]));
 
         if (!Paths\exists($root)) {
             broadcast(event('Commands directory does not exist.', ['directory' => $root]));

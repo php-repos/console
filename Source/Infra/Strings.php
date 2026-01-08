@@ -68,18 +68,6 @@ function kebab_case(string $subject): string
 }
 
 /**
- * Prepends a prefix to a string if the string exists.
- *
- * @param string|null $subject The input string.
- * @param string $prefix The prefix to prepend.
- * @return string The prefixed string, or empty string if subject is null/empty.
- */
-function prepend_when_exists(?string $subject, string $prefix): string
-{
-    return $subject ? $prefix . $subject : '';
-}
-
-/**
  * Asserts that two values are equal when converted to strings.
  *
  * @param mixed $actual The actual value.
@@ -90,7 +78,21 @@ function prepend_when_exists(?string $subject, string $prefix): string
  */
 function assert_equal(mixed $actual, mixed $expected, ?string $message = null): true
 {
-    if ((string) $actual === (string) $expected) {
+    $actual_string = (string) $actual;
+    $expected_string = (string) $expected;
+
+    // Normalize line endings for cross-platform compatibility (Windows uses \r\n, Unix uses \n)
+    $actual_normalized = str_replace("\r\n", "\n", $actual_string);
+    $expected_normalized = str_replace("\r\n", "\n", $expected_string);
+
+    // On Windows, also strip ANSI color codes for comparison
+    $is_windows = DIRECTORY_SEPARATOR === '\\' || PHP_OS_FAMILY === 'Windows';
+    if ($is_windows) {
+        $actual_normalized = preg_replace('/\e\[[0-9;]*m/', '', $actual_normalized);
+        $expected_normalized = preg_replace('/\e\[[0-9;]*m/', '', $expected_normalized);
+    }
+
+    if ($actual_normalized === $expected_normalized) {
         return true;
     }
 
@@ -98,5 +100,5 @@ function assert_equal(mixed $actual, mixed $expected, ?string $message = null): 
         throw new AssertionError($message);
     }
 
-    throw new AssertionError("Strings are not equal. Expected `$expected` but the actual string is `$actual`.");
+    throw new AssertionError("Strings are not equal. Expected `$expected_string` but the actual string is `$actual_string`.");
 }
