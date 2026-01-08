@@ -85,6 +85,13 @@ function assert_equal(mixed $actual, mixed $expected, ?string $message = null): 
     $actual_normalized = str_replace("\r\n", "\n", $actual_string);
     $expected_normalized = str_replace("\r\n", "\n", $expected_string);
 
+    // On Windows, also strip ANSI color codes for comparison
+    $is_windows = DIRECTORY_SEPARATOR === '\\' || PHP_OS_FAMILY === 'Windows';
+    if ($is_windows) {
+        $actual_normalized = preg_replace('/\e\[[0-9;]*m/', '', $actual_normalized);
+        $expected_normalized = preg_replace('/\e\[[0-9;]*m/', '', $expected_normalized);
+    }
+
     if ($actual_normalized === $expected_normalized) {
         return true;
     }

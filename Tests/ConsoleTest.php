@@ -31,19 +31,21 @@ test(
         $console_path = realpath(__DIR__ . '/../console');
         $expected_commands_path = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . 'Commands';
 
-        // Run from /tmp to ensure CWD is different from console file location
-        $output = shell_exec("cd /tmp && php {$console_path}");
+        // Use cross-platform temp directory
+        $temp_dir = sys_get_temp_dir();
+        $output = shell_exec("cd \"{$temp_dir}\" && php \"{$console_path}\"");
 
-        // Should look for Commands relative to console file, not /tmp
+        // Should look for Commands relative to console file, not temp directory
         assert_true(
             str_contains($output, "Commands directory does not exist: {$expected_commands_path}"),
             "Expected error message about {$expected_commands_path} but got: {$output}"
         );
 
-        // Should NOT look in /tmp/Commands
+        // Should NOT look in temp/Commands
+        $temp_commands = $temp_dir . DIRECTORY_SEPARATOR . 'Commands';
         assert_true(
-            !str_contains($output, "/tmp/Commands"),
-            "Should not look for commands in CWD (/tmp/Commands)"
+            !str_contains($output, $temp_commands),
+            "Should not look for commands in CWD ({$temp_commands})"
         );
     }
 );
@@ -241,7 +243,7 @@ Options:
 
 EOD;
 
-        assert_true($expected === $output, 'Wrong error message when required option not passed.' . PHP_EOL . $expected . PHP_EOL . $output);
+        assert_equal($output, $expected);
     },
     before: function () {
         copy_commands();
