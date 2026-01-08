@@ -1,7 +1,6 @@
 <?php
 
 use function PhpRepos\Console\Infra\CLI\assert_error;
-use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\Console\Infra\Strings\assert_equal;
 use function PhpRepos\TestRunner\Runner\test;
 
