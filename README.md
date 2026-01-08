@@ -649,6 +649,7 @@ use PhpRepos\Console\Business\Finder;
 use PhpRepos\Console\Business\Command;
 use PhpRepos\Console\UI;
 use PhpRepos\Console\Infra\CLI;
+use PhpRepos\Console\Infra\Filesystem;
 
 global $argv;
 
@@ -660,7 +661,8 @@ $wants_help = isset($options['h']) || isset($options['help']);
 $inputs = array_slice($argv, $offset);
 
 // Discover commands
-$finder_outcome = Finder\path('Commands');
+$root = Filesystem\realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Commands');
+$finder_outcome = Finder\path($root);
 
 if (!$finder_outcome->success) {
     CLI\error($finder_outcome->message);
@@ -720,23 +722,30 @@ exit($run_outcome->data['exit_code'] ?? 0);
 Change where commands are loaded from:
 
 ```php
-// Instead of:
-$finder_outcome = Finder\path('Commands');
+// Basic usage - commands in same directory as console file
+$root = Filesystem\realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Commands');
+$finder_outcome = Finder\path($root);
 
-// Use:
-$finder_outcome = Finder\path('MyCommands', 'Handler.php');
+// Custom directory
+$root = Filesystem\realpath(__DIR__ . DIRECTORY_SEPARATOR . 'MyCommands');
+$finder_outcome = Finder\path($root, 'Handler.php');
+
+// Absolute path
+$finder_outcome = Finder\path('/absolute/path/to/Commands');
 ```
 
-This will:
-- Look in `MyCommands/` directory instead of `Commands/`
-- Look for files ending in `Handler.php` instead of `Command.php`
+This allows you to:
+- Use commands in a custom directory relative to your console file
+- Specify a different file suffix (e.g., `Handler.php` instead of `Command.php`)
+- Use absolute paths when needed
 
 ### Example: Adding Programmatic Commands
 
 Add commands without creating files:
 
 ```php
-$finder_outcome = Finder\path('Commands');
+$root = Filesystem\realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Commands');
+$finder_outcome = Finder\path($root);
 $command_handlers = $finder_outcome->data['handlers'];
 
 // Add custom command
@@ -889,9 +898,9 @@ Handles I/O, formatting, and system-level concerns.
 
 #### Business Functions
 
-**`Finder\path(string $relative_path, string $suffix = 'Command.php'): Outcome`**
+**`Finder\path(string $root, string $suffix = 'Command.php'): Outcome`**
 
-Discovers commands from a directory.
+Discovers commands from a directory path.
 
 Returns:
 ```php

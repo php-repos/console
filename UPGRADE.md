@@ -76,6 +76,7 @@ use PhpRepos\Console\Business\Finder;
 use PhpRepos\Console\Business\Command;
 use PhpRepos\Console\UI;
 use PhpRepos\Console\Infra\CLI;
+use PhpRepos\Console\Infra\Filesystem;
 
 global $argv;
 
@@ -86,7 +87,8 @@ $options = getopt($short_options, $long_options, $offset);
 $wants_help = isset($options['h']) || isset($options['help']);
 $inputs = array_slice($argv, $offset);
 
-$outcome = Finder\path('Commands', 'Command.php');
+$root = Filesystem\realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Commands');
+$outcome = Finder\path($root, 'Command.php');
 
 if (!$outcome->success) CLI\error($outcome->message) && exit(1);
 

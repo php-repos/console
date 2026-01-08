@@ -6,17 +6,6 @@ use PhpRepos\Console\Infra\Arrays;
 use PhpRepos\Console\Infra\Filesystem;
 
 /**
- * Converts a relative path to an absolute path under the project root.
- *
- * @param string $relative_path Relative path from project root
- * @return string Absolute path
- */
-function under_root(string $relative_path): string
-{
-    return Filesystem\root() . $relative_path;
-}
-
-/**
  * Checks if a directory exists.
  *
  * @param string $path Path to check

@@ -3,6 +3,7 @@
 use function PhpRepos\Console\Infra\CLI\assert_error;
 use function PhpRepos\Console\Infra\CLI\assert_line;
 use function PhpRepos\Console\Infra\Strings\assert_equal;
+use function PhpRepos\Console\Infra\Filesystem\realpath;
 use function PhpRepos\Console\Infra\Filesystem\root;
 use function PhpRepos\TestRunner\Assertions\assert_true;
 use function PhpRepos\TestRunner\Runner\test;
@@ -18,8 +19,33 @@ test(
     title: 'it should check Commands directory by default',
     case: function () {
         $output = shell_exec('php ./console');
-        $root = root();
-        assert_error("There is no command in {$root}Commands path!", $output);
+        // Path is now resolved from console file's directory, not CWD
+        $expected_path = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . 'Commands';
+        assert_error("Commands directory does not exist: {$expected_path}", $output);
+    }
+);
+
+test(
+    title: 'it should resolve paths from console file location, not current working directory',
+    case: function () {
+        // Run console from a different directory to verify it uses __DIR__ not getcwd()
+        $console_path = realpath(__DIR__ . '/../console');
+        $expected_commands_path = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . 'Commands';
+
+        // Run from /tmp to ensure CWD is different from console file location
+        $output = shell_exec("cd /tmp && php {$console_path}");
+
+        // Should look for Commands relative to console file, not /tmp
+        assert_true(
+            str_contains($output, "Commands directory does not exist: {$expected_commands_path}"),
+            "Expected error message about {$expected_commands_path} but got: {$output}"
+        );
+
+        // Should NOT look in /tmp/Commands
+        assert_true(
+            !str_contains($output, "/tmp/Commands"),
+            "Should not look for commands in CWD (/tmp/Commands)"
+        );
     }
 );
 
